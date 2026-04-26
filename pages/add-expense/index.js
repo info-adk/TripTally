@@ -12,7 +12,7 @@ Page({
     description: '',
     payerIndex: 0,
     date: '',
-    participants: {}, // userId -> boolean
+    participants: {}, // userName -> boolean
     // 数据
     members: [],
     categories: [
@@ -23,7 +23,7 @@ Page({
       { value: '娱乐', name: '娱乐', icon: '🎮' },
       { value: '其他', name: '其他', icon: '📝' }
     ],
-    currentUserId: '',
+    currentUserName: '',
     maxDate: '',
     // 状态
     isLoading: false,
@@ -58,7 +58,7 @@ Page({
     const userInfo = app.getUserInfo()
 
     // 设置当前用户ID
-    this.setData({ currentUserId: userInfo.userId })
+    this.setData({ currentUserName: userInfo.userName })
 
     // 设置最大日期为今天
     const today = new Date()
@@ -126,13 +126,13 @@ Page({
           }
 
           const members = res.data
-          const currentUserId = this.data.currentUserId
+          const currentUserName = this.data.currentUserName
           const participants = {}
           let payerIndex = 0
 
           members.forEach((member, index) => {
-            participants[member.userId] = true // 默认全选
-            if (member.userId === currentUserId) {
+            participants[member.userName] = true // 默认全选
+            if (member.userName === currentUserName) {
               payerIndex = index
             }
           })
@@ -141,13 +141,13 @@ Page({
           if (this.data.isEdit) {
             const expense = this.data
             // 找到支付者索引
-            payerIndex = members.findIndex(m => m.userId === expense.payerId)
+            payerIndex = members.findIndex(m => m.userName === expense.payerName)
             if (payerIndex === -1) payerIndex = 0
 
             // 设置参与人
             const newParticipants = {}
             members.forEach(member => {
-              newParticipants[member.userId] = false
+              newParticipants[member.userName] = false
             })
             // 从数据库加载参与人
             this.loadParticipantsAndSet(members, newParticipants, payerIndex)
@@ -172,11 +172,10 @@ Page({
   initWithDefaultMembers: function() {
     const currentUser = app.getUserInfo()
     const members = [{
-      userId: currentUser.userId,
       userName: currentUser.userName
     }]
     const participants = {}
-    participants[currentUser.userId] = true
+    participants[currentUser.userName] = true
 
     this.setData({
       members,
@@ -194,8 +193,8 @@ Page({
         const expense = res.data
         if (expense && expense.participants) {
           expense.participants.forEach(p => {
-            if (participants.hasOwnProperty(p.userId)) {
-              participants[p.userId] = true
+            if (participants.hasOwnProperty(p.userName)) {
+              participants[p.userName] = true
             }
           })
         }
@@ -270,7 +269,7 @@ Page({
     const member = this.data.members[index]
     const participants = { ...this.data.participants }
 
-    participants[member.userId] = !participants[member.userId]
+    participants[member.userName] = !participants[member.userName]
 
     this.setData({
       participants,
@@ -328,12 +327,11 @@ Page({
 
     // 构建参与人列表
     const participantList = []
-    Object.keys(participants).forEach(userId => {
-      if (participants[userId]) {
-        const member = members.find(m => m.userId === userId)
+    Object.keys(participants).forEach(userName => {
+      if (participants[userName]) {
+        const member = members.find(m => m.userName === userName)
         if (member) {
           participantList.push({
-            userId: member.userId,
             userName: member.userName
           })
         }
@@ -365,7 +363,7 @@ Page({
   checkAndSubmit: function(amount, selectedCategory, description, payer, date, participantList) {
     // 如果没有有效的支付者（离线模式可能发生），使用当前用户作为默认值
     const currentUser = app.getUserInfo()
-    const actualPayer = payer || { userId: currentUser.userId, userName: currentUser.userName }
+    const actualPayer = payer || { userName: currentUser.userName }
 
     wx.getNetworkType({
       success: (res) => {
@@ -388,18 +386,16 @@ Page({
   saveOfflineExpense: function(amount, selectedCategory, description, payer, date, participantList) {
     const currentUser = app.getUserInfo()
     // 离线时如果 payer 无效，使用当前用户作为支付者
-    const actualPayer = payer || { userId: currentUser.userId, userName: currentUser.userName }
+    const actualPayer = payer || { userName: currentUser.userName }
 
     const expense = {
       roomId: this.data.roomId,
       amount: parseFloat(amount),
       category: selectedCategory,
       description: description || '无备注',
-      payerId: actualPayer.userId,
       payerName: actualPayer.userName,
       date: date,
       participants: participantList,
-      createdById: currentUser.userId,
       createdByName: currentUser.userName
     }
 
@@ -424,11 +420,9 @@ Page({
         amount: parseFloat(amount),
         category: selectedCategory,
         description: description || '无备注',
-        payerId: payer.userId,
         payerName: payer.userName,
         date: date,
         participants: participantList,
-        userId: this.data.currentUserId,
         userName: app.getUserInfo().userName
       },
       success: (res) => {
@@ -467,11 +461,9 @@ Page({
         amount: parseFloat(amount),
         category: selectedCategory,
         description: description || '无备注',
-        payerId: payer.userId,
         payerName: payer.userName,
         date: date,
         participants: participantList,
-        userId: this.data.currentUserId,
         userName: app.getUserInfo().userName
       },
       success: (res) => {
@@ -522,7 +514,6 @@ Page({
       data: {
         expenseId: this.data.expenseId,
         roomId: this.data.roomId,
-        userId: this.data.currentUserId,
         userName: app.getUserInfo().userName
       },
       success: (res) => {

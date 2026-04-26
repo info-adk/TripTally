@@ -10,7 +10,7 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { expenseId, roomId, userId, limit = 20, offset = 0 } = event
+  const { expenseId, roomId, userName, limit = 20, offset = 0 } = event
 
   try {
     // 构建查询条件
@@ -19,9 +19,9 @@ exports.main = async (event, context) => {
     if (expenseId) {
       query = query.where({ expenseId })
     } else if (roomId) {
-      // 验证用户是否是房间成员
+      // 验证用户是否是房间成员（用昵称判断）
       const memberCheck = await db.collection('room_members')
-        .where({ roomId, userId, isActive: true })
+        .where({ roomId, userName, isActive: true })
         .count()
 
       if (memberCheck.total === 0) {

@@ -10,9 +10,9 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { roomId, userId } = event
+  const { roomId, userName } = event
 
-  if (!roomId || !userId) {
+  if (!roomId || !userName) {
     return {
       success: false,
       message: '参数错误'
@@ -20,9 +20,9 @@ exports.main = async (event, context) => {
   }
 
   try {
-    // 查找房间成员记录
+    // 查找房间成员记录（用昵称查询）
     const memberResult = await db.collection('room_members')
-      .where({ roomId, userId, isActive: true })
+      .where({ roomId, userName, isActive: true })
       .get()
 
     if (memberResult.data.length === 0) {

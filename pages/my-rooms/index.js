@@ -73,7 +73,6 @@ Page({
       name: 'leaveRoom',
       data: {
         roomId: room.roomId,
-        userId: userInfo.userId,
         userName: userInfo.userName
       },
       success: (res) => {

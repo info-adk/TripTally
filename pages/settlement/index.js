@@ -122,8 +122,7 @@ Page({
     // 初始化每人收支
     const balances = {}
     members.forEach(member => {
-      balances[member.userId] = {
-        userId: member.userId,
+      balances[member.userName] = {
         userName: member.userName,
         paid: 0,
         shouldPay: 0,
@@ -133,30 +132,30 @@ Page({
 
     // 统计每人支付和应支付
     expenses.forEach(expense => {
-      const payerId = expense.payerId
-      const amount = expense.amount
+      const payerName = expense.payerName
+      const amount = Math.round(expense.amount * 100) / 100
       const participants = expense.participants || []
       const participantCount = participants.length || 1
-      const perPerson = amount / participantCount
+      const perPerson = Math.round((amount / participantCount) * 100) / 100
 
       // 支付者增加支付额
-      if (balances[payerId]) {
-        balances[payerId].paid += amount
+      if (balances[payerName]) {
+        balances[payerName].paid = Math.round((balances[payerName].paid + amount) * 100) / 100
       }
 
       // 参与者增加应支付额
       participants.forEach(participant => {
-        if (balances[participant.userId]) {
-          balances[participant.userId].shouldPay += perPerson
+        if (balances[participant.userName]) {
+          balances[participant.userName].shouldPay = Math.round((balances[participant.userName].shouldPay + perPerson) * 100) / 100
         }
       })
     })
 
     // 计算净额并保留两位小数
-    Object.keys(balances).forEach(userId => {
-      balances[userId].net = Math.round((balances[userId].paid - balances[userId].shouldPay) * 100) / 100
-      balances[userId].paid = Math.round(balances[userId].paid * 100) / 100
-      balances[userId].shouldPay = Math.round(balances[userId].shouldPay * 100) / 100
+    Object.keys(balances).forEach(userName => {
+      balances[userName].net = Math.round((balances[userName].paid - balances[userName].shouldPay) * 100) / 100
+      balances[userName].paid = Math.round(balances[userName].paid * 100) / 100
+      balances[userName].shouldPay = Math.round(balances[userName].shouldPay * 100) / 100
     })
 
     // 生成结算方案
@@ -174,12 +173,12 @@ Page({
     const creditors = []
     const debtors = []
 
-    Object.keys(balances).forEach(userId => {
-      const net = balances[userId].net
+    Object.keys(balances).forEach(userName => {
+      const net = balances[userName].net
       if (net > 0.01) {
-        creditors.push({ userId, userName: balances[userId].userName, amount: net })
+        creditors.push({ userName: balances[userName].userName, amount: net })
       } else if (net < -0.01) {
-        debtors.push({ userId, userName: balances[userId].userName, amount: -net })
+        debtors.push({ userName: balances[userName].userName, amount: -net })
       }
     })
 
@@ -196,9 +195,7 @@ Page({
       const settleAmount = Math.min(creditor.amount, debtor.amount)
 
       settlements.push({
-        fromUserId: debtor.userId,
         fromUserName: debtor.userName,
-        toUserId: creditor.userId,
         toUserName: creditor.userName,
         amount: Math.round(settleAmount * 100) / 100
       })
@@ -240,7 +237,7 @@ Page({
         data: {
           isSettled: true,
           settledAt: new Date(),
-          settledBy: app.getUserInfo().userId
+          settledByName: app.getUserInfo().userName
         }
       })
     })

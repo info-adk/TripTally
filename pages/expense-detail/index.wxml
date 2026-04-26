@@ -78,13 +78,13 @@ module.exports = {
           <view class="detail-item">
             <view class="detail-label">参与AA的人员（{{expense.participants.length}}人）</view>
             <view class="participants-list">
-              <view wx:for="{{expense.participants}}" wx:key="userId" class="participant-item">
+              <view wx:for="{{expense.participants}}" wx:key="userName" class="participant-item">
                 <image wx:if="{{item.avatarUrl}}" class="participant-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
                 <view wx:else class="participant-avatar">
                   {{item.userName ? item.userName.charAt(0) : '?'}}
                 </view>
                 <view class="participant-name">{{item.userName}}</view>
-                <view wx:if="{{item.userId === expense.payerId}}" class="participant-role">支付者</view>
+                <view wx:if="{{item.userName === expense.payerName}}" class="participant-role">支付者</view>
               </view>
             </view>
           </view>

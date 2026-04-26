@@ -14,7 +14,7 @@ Page({
     swipeStartX: 0,
     // 房间信息
     roomInfo: null,
-    currentUserId: ''
+    currentUserName: ''
   },
 
   onLoad: function(options) {
@@ -33,7 +33,7 @@ Page({
     this.setData({
       roomId,
       expenseId,
-      currentUserId: app.getUserInfo().userId
+      currentUserName: app.getUserInfo().userName
     })
 
     this.loadExpenseDetail()
@@ -91,19 +91,18 @@ Page({
 
   // 检查编辑权限
   checkEditPermission: function() {
-    const { expense, roomInfo, currentUserId } = this.data
+    const { expense, roomInfo, currentUserName } = this.data
     if (!expense || !roomInfo) return
 
     let canEdit = false
 
     // 支付者可以编辑
-    if (expense.payerId === currentUserId) {
+    if (expense.payerName === currentUserName) {
       canEdit = true
     }
 
-    // 房间创建者可以编辑（需要从房间信息获取创建者ID）
-    // 注意：这里假设房间信息中有creatorId字段
-    if (roomInfo.creatorId === currentUserId) {
+    // 房间创建者可以编辑
+    if (roomInfo.creatorName === currentUserName) {
       canEdit = true
     }
 
@@ -224,7 +223,6 @@ Page({
       data: {
         expenseId: this.data.expenseId,
         roomId: this.data.roomId,
-        userId: userInfo.userId,
         userName: userInfo.userName
       },
       success: (res) => {

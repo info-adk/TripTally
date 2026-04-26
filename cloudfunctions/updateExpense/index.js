@@ -16,11 +16,9 @@ exports.main = async (event, context) => {
     amount,
     category,
     description,
-    payerId,
     payerName,
     date,
     participants,
-    userId,
     userName
   } = event
 
@@ -33,8 +31,8 @@ exports.main = async (event, context) => {
     return { success: false, message: '房间ID不能为空' }
   }
 
-  if (!userId || !userName || !userName.trim()) {
-    return { success: false, message: '用户信息不完整，请重新进入小程序' }
+  if (!userName || !userName.trim()) {
+    return { success: false, message: '请输入昵称' }
   }
 
   if (!amount || amount <= 0) {
@@ -63,8 +61,8 @@ exports.main = async (event, context) => {
     }
 
     const room = roomResult.data
-    const isPayer = oldExpense.payerId === userId
-    const isCreator = room.creatorId === userId
+    const isPayer = oldExpense.payerName === userName
+    const isCreator = room.creatorName === userName
 
     if (!isPayer && !isCreator) {
       return { success: false, message: '只有支付者或房间创建者可以编辑' }
@@ -77,7 +75,6 @@ exports.main = async (event, context) => {
       version: oldExpense.version || 1,
       data: oldExpense,
       operation: 'update',
-      operatedBy: userId,
       operatedByName: userName,
       operatedAt: db.serverDate(),
       reason: '编辑支出'
@@ -95,12 +92,10 @@ exports.main = async (event, context) => {
       amount: parseFloat(amount.toFixed(2)),
       category,
       description: description || '无备注',
-      payerId,
       payerName,
       date,
       participants,
       updatedAt: db.serverDate(),
-      updatedBy: userId,
       updatedByName: userName,
       version: (oldExpense.version || 1) + 1
     }
@@ -119,10 +114,10 @@ exports.main = async (event, context) => {
       })
 
       // 更新旧支付者和新支付者的总支付金额
-      if (oldExpense.payerId !== payerId) {
+      if (oldExpense.payerName !== payerName) {
         // 旧支付者减去旧金额
         await db.collection('room_members')
-          .where({ roomId, userId: oldExpense.payerId })
+          .where({ roomId, userName: oldExpense.payerName })
           .update({
             data: {
               totalPaid: _.inc(-oldExpense.amount)
@@ -130,7 +125,7 @@ exports.main = async (event, context) => {
           })
         // 新支付者加上新金额
         await db.collection('room_members')
-          .where({ roomId, userId: payerId })
+          .where({ roomId, userName: payerName })
           .update({
             data: {
               totalPaid: _.inc(amount)
@@ -139,7 +134,7 @@ exports.main = async (event, context) => {
       } else {
         // 同一支付者，调整金额
         await db.collection('room_members')
-          .where({ roomId, userId: payerId })
+          .where({ roomId, userName: payerName })
           .update({
             data: {
               totalPaid: _.inc(amountDiff)

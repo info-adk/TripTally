@@ -117,7 +117,7 @@ Page({
       data: {
         roomId: this.data.roomId,
         versionId: record._id,
-        userId: app.getUserInfo().userId
+        userName: app.getUserInfo().userName
       },
       success: (res) => {
         wx.hideLoading()

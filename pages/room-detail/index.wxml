@@ -45,7 +45,7 @@
         <view class="card">
           <view class="card-title">成员 ({{members.length}}/5)</view>
           <view class="members">
-            <view wx:for="{{members}}" wx:key="userId" class="member">
+            <view wx:for="{{members}}" wx:key="userName" class="member">
               <image wx:if="{{item.avatarUrl}}" class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
               <view wx:else class="avatar">{{item.userName.charAt(0)}}</view>
               <text class="name">{{item.userName}}</text>
@@ -58,7 +58,7 @@
           <view class="card-title">AA结算</view>
           <view class="aa-total">总支出: ¥{{aaResult.totalAmount}}</view>
           <view class="balances">
-            <view wx:for="{{aaResult.balances}}" wx:key="userId" class="balance-item">
+            <view wx:for="{{aaResult.balances}}" wx:key="userName" class="balance-item">
               <text>{{item.userName}}</text>
               <text class="{{item.net >= 0 ? 'positive' : 'negative'}}">
                 {{item.net >= 0 ? '+' : ''}}{{item.net}}

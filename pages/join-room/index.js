@@ -60,9 +60,8 @@ Page({
       name: 'joinRoom',
       data: {
         roomCode,
-        userId: userInfo.userId,
         userName: userInfo.userName,
-        avatarUrl: userInfo.avatarUrl || ''
+        ...(userInfo.avatarUrl ? { avatarUrl: userInfo.avatarUrl } : {})
       },
       success: (res) => {
         if (res.result.success) {

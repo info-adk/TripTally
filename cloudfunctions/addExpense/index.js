@@ -12,9 +12,7 @@ exports.main = async (event, context) => {
 
   const {
     roomId,
-    userId,
     userName,
-    avatarUrl = '',
     amount,
     category = '其他',
     description = '',
@@ -26,8 +24,8 @@ exports.main = async (event, context) => {
     return { success: false, message: '房间ID不能为空' }
   }
 
-  if (!userId || !userName || !userName.trim()) {
-    return { success: false, message: '用户信息不完整，请重新进入小程序' }
+  if (!userName || !userName.trim()) {
+    return { success: false, message: '请输入昵称' }
   }
 
   if (!amount || amount <= 0) {
@@ -45,7 +43,7 @@ exports.main = async (event, context) => {
     }
 
     const memberCheck = await db.collection('room_members')
-      .where({ roomId, userId, isActive: true })
+      .where({ roomId, userName, isActive: true })
       .count()
 
     if (memberCheck.total === 0) {
@@ -57,20 +55,19 @@ exports.main = async (event, context) => {
     if (!finalParticipants || finalParticipants.length === 0) {
       const membersResult = await db.collection('room_members')
         .where({ roomId, isActive: true })
-        .field({ userId: true, userName: true })
+        .field({ userName: true })
         .get()
       finalParticipants = membersResult.data.map(member => ({
-        userId: member.userId,
         userName: member.userName,
         avatarUrl: member.avatarUrl || ''
       }))
     } else {
       // 验证参与人员是否都是房间成员
-      const participantIds = finalParticipants.map(p => p.userId)
+      const participantNames = finalParticipants.map(p => p.userName)
       const participantsCheck = await db.collection('room_members')
         .where({
           roomId,
-          userId: _.in(participantIds),
+          userName: _.in(participantNames),
           isActive: true
         })
         .count()
@@ -79,14 +76,14 @@ exports.main = async (event, context) => {
         return { success: false, message: '部分参与人员不是房间成员' }
       }
 
-      // 获取参与人员姓名
+      // 获取参与人员信息
       const participantsInfo = await db.collection('room_members')
         .where({
           roomId,
-          userId: _.in(participantIds),
+          userName: _.in(participantNames),
           isActive: true
         })
-        .field({ userId: true, userName: true })
+        .field({ userName: true })
         .get()
 
       finalParticipants = participantsInfo.data
@@ -95,9 +92,7 @@ exports.main = async (event, context) => {
     // 创建支出记录
     const expenseData = {
       roomId,
-      payerId: userId,
       payerName: userName,
-      createdById: userId,
       createdByName: userName,
       amount: parseFloat(amount.toFixed(2)),
       category,
@@ -123,7 +118,6 @@ exports.main = async (event, context) => {
       version: 1,
       data: expenseData,
       operation: 'create',
-      operatedBy: userId,
       operatedByName: userName,
       operatedAt: db.serverDate(),
       reason: '新增支出'
@@ -143,7 +137,7 @@ exports.main = async (event, context) => {
 
     // 更新支付者的总支付金额
     await db.collection('room_members')
-      .where({ roomId, userId })
+      .where({ roomId, userName })
       .update({
         data: {
           totalPaid: _.inc(amount)

@@ -10,14 +10,14 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { versionId, expenseId, userId, userName } = event
+  const { versionId, expenseId, userName } = event
 
   if (!versionId && !expenseId) {
     return { success: false, message: '需要提供versionId或expenseId' }
   }
 
-  if (!userId || !userName || !userName.trim()) {
-    return { success: false, message: '用户信息不完整' }
+  if (!userName || !userName.trim()) {
+    return { success: false, message: '请输入昵称' }
   }
 
   try {
@@ -46,7 +46,7 @@ exports.main = async (event, context) => {
 
     // 验证操作权限
     const memberCheck = await db.collection('room_members')
-      .where({ roomId, userId, isActive: true })
+      .where({ roomId, userName, isActive: true })
       .count()
 
     if (memberCheck.total === 0) {
@@ -59,8 +59,8 @@ exports.main = async (event, context) => {
       .get()
     const room = roomResult.data
 
-    const isCreator = room.creatorId === userId
-    const isPayer = expenseData.payerId === userId
+    const isCreator = room.creatorName === userName
+    const isPayer = expenseData.payerName === userName
 
     if (!isCreator && !isPayer) {
       return { success: false, message: '只有房间创建者或支付者可以恢复记录' }
@@ -119,7 +119,6 @@ exports.main = async (event, context) => {
       version: historyRecord.version + 1,
       data: expenseData,
       operation: 'restore',
-      operatedBy: userId,
       operatedByName: userName,
       operatedAt: db.serverDate(),
       reason: `从版本 ${historyRecord.version} 恢复`

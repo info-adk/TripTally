@@ -9,14 +9,14 @@ cloud.init({
 exports.main = async (event, context) => {
   const db = cloud.database()
 
-  const { expenseId, userId, userName, operation, reason = '' } = event
+  const { expenseId, userName, operation, reason = '' } = event
 
   if (!expenseId || !operation) {
     return { success: false, message: '参数不完整' }
   }
 
-  if (!userId || !userName || !userName.trim()) {
-    return { success: false, message: '用户信息不完整' }
+  if (!userName || !userName.trim()) {
+    return { success: false, message: '请输入昵称' }
   }
 
   try {
@@ -34,7 +34,7 @@ exports.main = async (event, context) => {
 
     // 验证操作权限
     const userCheck = await db.collection('room_members')
-      .where({ roomId, userId, isActive: true })
+      .where({ roomId, userName, isActive: true })
       .count()
 
     if (userCheck.total === 0) {
@@ -59,7 +59,6 @@ exports.main = async (event, context) => {
       version: currentVersion,
       data: expense,
       operation, // create/update/delete
-      operatedBy: userId,
       operatedByName: userName,
       operatedAt: db.serverDate(),
       reason

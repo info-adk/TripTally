@@ -60,7 +60,7 @@ module.exports = {
       <view class="balance-section">
         <view class="section-title">个人明细</view>
         <view class="balance-list">
-          <view wx:for="{{balances}}" wx:key="userId" class="balance-item">
+          <view wx:for="{{balances}}" wx:key="userName" class="balance-item">
             <view class="balance-user">
               <view class="avatar-small">{{item.userName.charAt(0)}}</view>
               <text class="balance-name">{{item.userName}}</text>

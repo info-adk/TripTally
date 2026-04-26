@@ -76,7 +76,7 @@
           <view class="members-list">
             <view
               wx:for="{{members}}"
-              wx:key="userId"
+              wx:key="userName"
               class="member-item"
               bindtap="onParticipantToggle"
               data-index="{{index}}"
@@ -84,8 +84,8 @@
               <view class="member-info">
                 <view class="member-name">{{item.userName}}</view>
               </view>
-              <view class="checkbox {{participants[item.userId] ? 'checked' : ''}}">
-                <text wx:if="{{participants[item.userId]}}">✓</text>
+              <view class="checkbox {{participants[item.userName] ? 'checked' : ''}}">
+                <text wx:if="{{participants[item.userName]}}">✓</text>
               </view>
             </view>
           </view>

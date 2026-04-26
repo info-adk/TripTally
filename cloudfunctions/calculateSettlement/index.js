@@ -10,7 +10,7 @@ function calculateAA(expenses, members) {
   // 1. 初始化每人收支
   const balances = {}
   members.forEach(member => {
-    balances[member.userId] = {
+    balances[member.userName] = {
       paid: 0,
       shouldPay: 0,
       net: 0,
@@ -20,27 +20,27 @@ function calculateAA(expenses, members) {
 
   // 2. 统计每人支付和应支付
   expenses.forEach(expense => {
-    const payerId = expense.payerId
-    const amount = expense.amount
+    const payerName = expense.payerName
+    const amount = Math.round(expense.amount * 100) / 100  // 保留2位小数
     const participantCount = expense.participants.length
-    const perPerson = amount / participantCount
+    const perPerson = Math.round((amount / participantCount) * 100) / 100  // 保留2位小数
 
     // 支付者增加支付额
-    if (balances[payerId]) {
-      balances[payerId].paid += amount
+    if (balances[payerName]) {
+      balances[payerName].paid = Math.round((balances[payerName].paid + amount) * 100) / 100
     }
 
     // 参与者增加应支付额
     expense.participants.forEach(participant => {
-      if (balances[participant.userId]) {
-        balances[participant.userId].shouldPay += perPerson
+      if (balances[participant.userName]) {
+        balances[participant.userName].shouldPay = Math.round((balances[participant.userName].shouldPay + perPerson) * 100) / 100
       }
     })
   })
 
   // 3. 计算净额
-  Object.keys(balances).forEach(userId => {
-    balances[userId].net = balances[userId].paid - balances[userId].shouldPay
+  Object.keys(balances).forEach(userName => {
+    balances[userName].net = Math.round((balances[userName].paid - balances[userName].shouldPay) * 100) / 100
   })
 
   return balances
@@ -51,17 +51,15 @@ function generateSettlement(balances) {
   const creditors = []
   const debtors = []
 
-  Object.keys(balances).forEach(userId => {
-    const balance = balances[userId]
+  Object.keys(balances).forEach(userName => {
+    const balance = balances[userName]
     if (balance.net > 0) {
       creditors.push({
-        userId,
         userName: balance.userName,
         amount: balance.net
       })
     } else if (balance.net < 0) {
       debtors.push({
-        userId,
         userName: balance.userName,
         amount: -balance.net
       })
@@ -82,9 +80,7 @@ function generateSettlement(balances) {
 
     if (settleAmount > 0.01) { // 忽略小于1分钱的转账
       settlements.push({
-        fromUserId: debtor.userId,
         fromUserName: debtor.userName,
-        toUserId: creditor.userId,
         toUserName: creditor.userName,
         amount: parseFloat(settleAmount.toFixed(2))
       })
@@ -127,7 +123,6 @@ exports.main = async (event, context) => {
         isActive: true
       })
       .field({
-        userId: true,
         userName: true
       })
       .get()
@@ -153,9 +148,9 @@ exports.main = async (event, context) => {
 
     // 6. 更新成员余额信息
     const updatePromises = members.map(member => {
-      const balance = balances[member.userId] || { paid: 0, shouldPay: 0, net: 0 }
+      const balance = balances[member.userName] || { paid: 0, shouldPay: 0, net: 0 }
       return db.collection('room_members')
-        .where({ roomId, userId: member.userId })
+        .where({ roomId, userName: member.userName })
         .update({
           data: {
             totalPaid: balance.paid,
@@ -176,12 +171,11 @@ exports.main = async (event, context) => {
       averageAmount: parseFloat(averageExpense.toFixed(2)),
       memberCount: members.length,
       expenseCount: expenses.length,
-      balances: Object.keys(balances).map(userId => ({
-        userId,
-        userName: balances[userId].userName,
-        paid: parseFloat(balances[userId].paid.toFixed(2)),
-        shouldPay: parseFloat(balances[userId].shouldPay.toFixed(2)),
-        net: parseFloat(balances[userId].net.toFixed(2))
+      balances: Object.keys(balances).map(userName => ({
+        userName: balances[userName].userName,
+        paid: parseFloat(balances[userName].paid.toFixed(2)),
+        shouldPay: parseFloat(balances[userName].shouldPay.toFixed(2)),
+        net: parseFloat(balances[userName].net.toFixed(2))
       })),
       settlements: settlements,
       calculatedBy: 'system',

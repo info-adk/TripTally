@@ -34,9 +34,8 @@ Page({
       name: 'createRoom',
       data: {
         roomName: roomName || '未命名旅行',
-        userId: userInfo.userId,
         userName: userInfo.userName,
-        avatarUrl: userInfo.avatarUrl || ''
+        ...(userInfo.avatarUrl ? { avatarUrl: userInfo.avatarUrl } : {})
       },
       success: (res) => {
         if (res.result.success) {

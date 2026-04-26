@@ -10,7 +10,7 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { roomCode, userId, userName, avatarUrl = '' } = event
+  const { roomCode, userName, avatarUrl } = event
 
   if (!roomCode || roomCode.length !== 6) {
     return {
@@ -19,10 +19,10 @@ exports.main = async (event, context) => {
     }
   }
 
-  if (!userId || !userName || !userName.trim()) {
+  if (!userName || !userName.trim()) {
     return {
       success: false,
-      message: '用户信息不完整，请重新进入小程序'
+      message: '请输入昵称'
     }
   }
 
@@ -50,9 +50,9 @@ exports.main = async (event, context) => {
       }
     }
 
-    // 检查是否已经是成员
+    // 检查是否已经是成员（用昵称判断）
     const memberCheck = await db.collection('room_members')
-      .where({ roomId, userId, isActive: true })
+      .where({ roomId, userName, isActive: true })
       .count()
 
     if (memberCheck.total > 0) {
@@ -68,13 +68,12 @@ exports.main = async (event, context) => {
     // 添加为新成员
     const memberData = {
       roomId,
-      userId,
       userName,
-      avatarUrl,
       joinedAt: db.serverDate(),
       isActive: true,
       totalPaid: 0,
-      totalShouldPay: 0
+      totalShouldPay: 0,
+      ...(avatarUrl ? { avatarUrl } : {})
     }
 
     await db.collection('room_members').add({

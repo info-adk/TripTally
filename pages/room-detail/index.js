@@ -177,8 +177,7 @@ Page({
     // 初始化每人收支
     const balances = {}
     members.forEach(member => {
-      balances[member.userId] = {
-        userId: member.userId,
+      balances[member.userName] = {
         userName: member.userName,
         paid: 0,
         shouldPay: 0,
@@ -189,29 +188,29 @@ Page({
     // 统计每人支付和应支付
     let totalAmount = 0
     expenses.forEach(expense => {
-      const payerId = expense.payerId
-      const amount = expense.amount
+      const payerName = expense.payerName
+      const amount = Math.round(expense.amount * 100) / 100
       const participantCount = expense.participants.length
-      const perPerson = amount / participantCount
+      const perPerson = Math.round((amount / participantCount) * 100) / 100
 
-      totalAmount += amount
+      totalAmount = Math.round((totalAmount + amount) * 100) / 100
 
       // 支付者增加支付额
-      if (balances[payerId]) {
-        balances[payerId].paid += amount
+      if (balances[payerName]) {
+        balances[payerName].paid = Math.round((balances[payerName].paid + amount) * 100) / 100
       }
 
       // 参与者增加应支付额
       expense.participants.forEach(participant => {
-        if (balances[participant.userId]) {
-          balances[participant.userId].shouldPay += perPerson
+        if (balances[participant.userName]) {
+          balances[participant.userName].shouldPay = Math.round((balances[participant.userName].shouldPay + perPerson) * 100) / 100
         }
       })
     })
 
     // 计算净额
-    Object.keys(balances).forEach(userId => {
-      balances[userId].net = balances[userId].paid - balances[userId].shouldPay
+    Object.keys(balances).forEach(userName => {
+      balances[userName].net = Math.round((balances[userName].paid - balances[userName].shouldPay) * 100) / 100
     })
 
     // 生成结算方案
@@ -231,12 +230,12 @@ Page({
     const creditors = []
     const debtors = []
 
-    Object.keys(balances).forEach(userId => {
-      const net = balances[userId].net
+    Object.keys(balances).forEach(userName => {
+      const net = balances[userName].net
       if (net > 0.01) { // 忽略微小金额
-        creditors.push({ userId, userName: balances[userId].userName, amount: net })
+        creditors.push({ userName: balances[userName].userName, amount: net })
       } else if (net < -0.01) {
-        debtors.push({ userId, userName: balances[userId].userName, amount: -net })
+        debtors.push({ userName: balances[userName].userName, amount: -net })
       }
     })
 
@@ -253,9 +252,7 @@ Page({
       const settleAmount = Math.min(creditor.amount, debtor.amount)
 
       settlements.push({
-        fromUserId: debtor.userId,
         fromUserName: debtor.userName,
-        toUserId: creditor.userId,
         toUserName: creditor.userName,
         amount: parseFloat(settleAmount.toFixed(2))
       })
@@ -514,7 +511,7 @@ Page({
       name: 'leaveRoom',
       data: {
         roomId,
-        userId: userInfo.userId
+        userName: userInfo.userName
       },
       success: (res) => {
         if (res.result.success) {

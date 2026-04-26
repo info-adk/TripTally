@@ -10,7 +10,7 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { expenseId, roomId, userId, userName } = event
+  const { expenseId, roomId, userName } = event
 
   // 参数验证
   if (!expenseId) {
@@ -21,8 +21,8 @@ exports.main = async (event, context) => {
     return { success: false, message: '房间ID不能为空' }
   }
 
-  if (!userId || !userName || !userName.trim()) {
-    return { success: false, message: '用户信息不完整，请重新进入小程序' }
+  if (!userName || !userName.trim()) {
+    return { success: false, message: '请输入昵称' }
   }
 
   try {
@@ -43,8 +43,8 @@ exports.main = async (event, context) => {
     }
 
     const room = roomResult.data
-    const isPayer = expense.payerId === userId
-    const isCreator = room.creatorId === userId
+    const isPayer = expense.payerName === userName
+    const isCreator = room.creatorName === userName
 
     if (!isPayer && !isCreator) {
       return { success: false, message: '只有支付者或房间创建者可以删除' }
@@ -57,7 +57,6 @@ exports.main = async (event, context) => {
       version: expense.version || 1,
       data: expense,
       operation: 'delete',
-      operatedBy: userId,
       operatedByName: userName,
       operatedAt: db.serverDate(),
       reason: '删除支出'
@@ -80,7 +79,7 @@ exports.main = async (event, context) => {
 
     // 更新支付者的总支付金额
     await db.collection('room_members')
-      .where({ roomId, userId: expense.payerId })
+      .where({ roomId, userName: expense.payerName })
       .update({
         data: {
           totalPaid: _.inc(-expense.amount)

@@ -15,14 +15,14 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { roomName, userId, userName, avatarUrl = '' } = event
+  const { roomName, userName, avatarUrl } = event
 
   try {
     // 验证参数
-    if (!userId || !userName || !userName.trim()) {
+    if (!userName || !userName.trim()) {
       return {
         success: false,
-        message: '用户信息不完整，请重新进入小程序'
+        message: '请输入昵称'
       }
     }
 
@@ -56,7 +56,6 @@ exports.main = async (event, context) => {
     const roomData = {
       roomCode,
       roomName,
-      creatorId: userId,
       creatorName: userName,
       createdAt: db.serverDate(),
       memberCount: 1,
@@ -76,13 +75,12 @@ exports.main = async (event, context) => {
     // 添加创建者为房间成员
     const memberData = {
       roomId,
-      userId,
       userName,
-      avatarUrl,
       joinedAt: db.serverDate(),
       isActive: true,
       totalPaid: 0,
-      totalShouldPay: 0
+      totalShouldPay: 0,
+      ...(avatarUrl ? { avatarUrl } : {})
     }
 
     await db.collection('room_members').add({
