@@ -1,0 +1,113 @@
+<view class="container">
+  <!-- 导航栏 -->
+  <navigation-bar title="{{isEdit ? '编辑支出' : '添加支出'}}" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <!-- 主要内容 -->
+  <scroll-view scroll-y="true" class="scroll-content">
+    <view class="content">
+      <view class="form-card">
+        <view class="form-title">{{isEdit ? '编辑支出' : '记录一笔新支出'}}</view>
+
+        <!-- 错误提示 -->
+        <view wx:if="{{errorMessage}}" class="error-message">
+          {{errorMessage}}
+        </view>
+
+        <!-- 金额输入 -->
+        <view class="form-group">
+          <view class="form-label">金额</view>
+          <input
+            class="form-input amount-input"
+            placeholder="0.00"
+            value="{{amount}}"
+            bindinput="onAmountInput"
+            type="digit"
+          />
+        </view>
+
+        <!-- 分类选择 -->
+        <view class="form-group">
+          <view class="form-label">分类</view>
+          <view class="category-grid">
+            <view
+              wx:for="{{categories}}"
+              wx:key="value"
+              class="category-item {{selectedCategory === item.value ? 'active' : ''}}"
+              bindtap="onCategorySelect"
+              data-value="{{item.value}}"
+            >
+              <view class="category-icon">{{item.icon}}</view>
+              <view class="category-name">{{item.name}}</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 描述输入 -->
+        <view class="form-group">
+          <view class="form-label">描述</view>
+          <input
+            class="form-input"
+            placeholder="简短描述"
+            value="{{description}}"
+            bindinput="onDescriptionInput"
+            maxlength="50"
+          />
+        </view>
+
+        <!-- 支付者选择 -->
+        <view class="form-group">
+          <view class="form-label">支付者</view>
+          <picker
+            mode="selector"
+            range="{{members}}"
+            range-key="userName"
+            value="{{payerIndex}}"
+            bindchange="onPayerChange"
+          >
+            <view class="picker-view">
+              {{members[payerIndex] ? members[payerIndex].userName : '请选择'}}
+            </view>
+          </picker>
+        </view>
+
+        <!-- 参与人选择 -->
+        <view class="form-group">
+          <view class="form-label">参与人</view>
+          <view class="members-list">
+            <view
+              wx:for="{{members}}"
+              wx:key="userId"
+              class="member-item"
+              bindtap="onParticipantToggle"
+              data-index="{{index}}"
+            >
+              <view class="member-info">
+                <view class="member-name">{{item.userName}}</view>
+              </view>
+              <view class="checkbox {{participants[item.userId] ? 'checked' : ''}}">
+                <text wx:if="{{participants[item.userId]}}">✓</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 日期 -->
+        <view class="form-group">
+          <view class="form-label">日期</view>
+          <picker mode="date" value="{{date}}" bindchange="onDateChange">
+            <view class="picker-view">{{date}}</view>
+          </picker>
+        </view>
+
+        <!-- 按钮 -->
+        <view class="btn-row">
+          <button wx:if="{{isEdit}}" class="btn btn-cancel" bindtap="onDelete">删除</button>
+          <button class="btn btn-cancel" bindtap="onCancel">取消</button>
+          <button class="btn btn-primary" bindtap="onSubmit" disabled="{{isLoading}}">
+            {{isLoading ? '处理中...' : (isEdit ? '保存' : '提交')}}
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

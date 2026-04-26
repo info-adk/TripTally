@@ -1,0 +1,96 @@
+<wxs module="utils">
+module.exports = {
+  formatAmount: function(amount) {
+    if (typeof amount === 'string') {
+      amount = parseFloat(amount)
+    }
+    return amount.toFixed(2)
+  }
+}
+</wxs>
+
+<view class="container">
+  <navigation-bar title="结算" />
+
+  <scroll-view scroll-y="true" class="scroll-content" enhanced="true" bounces="false">
+    <view class="content">
+      <!-- 汇总信息 -->
+      <view class="summary-card">
+        <view class="summary-title">本期总支出</view>
+        <view class="summary-amount">¥{{utils.formatAmount(totalAmount)}}</view>
+        <view class="summary-count">{{expenseCount}}笔支出</view>
+      </view>
+
+      <!-- 结算方案 -->
+      <view class="settlement-section">
+        <view class="section-title">结算方案</view>
+
+        <view wx:if="{{settlement.length === 0}}" class="empty-state">
+          <text>暂无待结算账单</text>
+        </view>
+
+        <view wx:else class="settlement-list">
+          <view wx:for="{{settlement}}" wx:key="index" class="settlement-item">
+            <view class="settlement-from">
+              <view class="avatar from-avatar">{{item.fromUserName.charAt(0)}}</view>
+              <view class="user-info">
+                <view class="user-name">{{item.fromUserName}}</view>
+                <view class="user-role">付款人</view>
+              </view>
+            </view>
+
+            <view class="settlement-arrow">
+              <view class="arrow-line"></view>
+              <view class="arrow-amount">¥{{utils.formatAmount(item.amount)}}</view>
+              <view class="arrow-icon">→</view>
+            </view>
+
+            <view class="settlement-to">
+              <view class="avatar to-avatar">{{item.toUserName.charAt(0)}}</view>
+              <view class="user-info">
+                <view class="user-name">{{item.toUserName}}</view>
+                <view class="user-role">收款人</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 个人明细 -->
+      <view class="balance-section">
+        <view class="section-title">个人明细</view>
+        <view class="balance-list">
+          <view wx:for="{{balances}}" wx:key="userId" class="balance-item">
+            <view class="balance-user">
+              <view class="avatar-small">{{item.userName.charAt(0)}}</view>
+              <text class="balance-name">{{item.userName}}</text>
+            </view>
+            <view class="balance-stats">
+              <view class="stat-item">
+                <text class="stat-label">已付</text>
+                <text class="stat-value paid">¥{{utils.formatAmount(item.paid)}}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-label">应付</text>
+                <text class="stat-value">¥{{utils.formatAmount(item.shouldPay)}}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-label">差额</text>
+                <text class="stat-value {{item.net >= 0 ? 'positive' : 'negative'}}">
+                  {{item.net >= 0 ? '+' : ''}}¥{{utils.formatAmount(item.net)}}
+                </text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <button class="btn-confirm" bindtap="onConfirmSettlement" disabled="{{settlement.length === 0}}">
+          确认结算
+        </button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

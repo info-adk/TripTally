@@ -1,0 +1,279 @@
+page {
+  height: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-content {
+  flex: 1;
+  height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content {
+  padding: 24rpx;
+  padding-bottom: 60rpx;
+}
+
+.expense-detail-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 36rpx 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.expense-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.expense-amount {
+  font-size: 60rpx;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  flex: 1;
+}
+
+.expense-category {
+  font-size: 26rpx;
+  color: white;
+  background: #4CAF50;
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.detail-item {
+  margin-bottom: 28rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: #999;
+  margin-bottom: 12rpx;
+  text-align: left;
+}
+
+.detail-value {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.participants-list {
+  background: #f9f9f9;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+.participant-item {
+  display: flex;
+  align-items: center;
+  padding: 18rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.participant-item:last-child {
+  border-bottom: none;
+}
+
+.participant-avatar {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  margin-right: 18rpx;
+  flex-shrink: 0;
+}
+
+.participant-avatar:not(image) {
+  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 26rpx;
+  font-weight: bold;
+}
+
+.participant-name {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+  text-align: left;
+}
+
+.participant-role {
+  font-size: 24rpx;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 36rpx;
+}
+
+.action-button {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-button.primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.action-button.secondary {
+  background: white;
+  color: #4CAF50;
+  border: 2rpx solid #4CAF50;
+}
+
+.action-button.danger {
+  background: #F44336;
+  color: white;
+}
+
+.action-button:disabled {
+  background: #ccc;
+  color: #999;
+}
+
+.confirm-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40rpx;
+}
+
+.dialog-content {
+  background: white;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  width: 100%;
+  max-width: 600rpx;
+}
+
+.dialog-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 28rpx;
+  text-align: center;
+}
+
+.dialog-message {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 36rpx;
+  text-align: center;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.dialog-button {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-button.cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.dialog-button.confirm {
+  background: #F44336;
+  color: white;
+}
+
+.swipe-delete {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-content {
+  position: relative;
+  z-index: 1;
+  background: white;
+  transition: transform 0.3s;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 200rpx;
+  background: #F44336;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-button {
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
+  padding: 0 40rpx;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 0;
+}
+
+.loading-icon {
+  font-size: 60rpx;
+  margin-bottom: 24rpx;
+  color: #4CAF50;
+}
+
+.loading-text {
+  font-size: 26rpx;
+  color: #666;
+}

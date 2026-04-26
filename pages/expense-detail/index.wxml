@@ -1,0 +1,164 @@
+<!-- pages/expense-detail/index.wxml -->
+<wxs module="utils">
+module.exports = {
+  formatAmount: function(amount) {
+    if (typeof amount === 'string') {
+      amount = parseFloat(amount)
+    }
+    return amount.toFixed(2)
+  },
+  formatDate: function(dateStr) {
+    if (!dateStr) return ''
+    var date = getDate(dateStr)
+    return (date.getMonth() + 1) + '月' + date.getDate() + '日'
+  },
+  formatDateTime: function(dateStr) {
+    if (!dateStr) return ''
+    var date = getDate(dateStr)
+    return date.getFullYear() + '-' +
+           String(date.getMonth() + 1).padStart(2, '0') + '-' +
+           String(date.getDate()).padStart(2, '0') + ' ' +
+           String(date.getHours()).padStart(2, '0') + ':' +
+           String(date.getMinutes()).padStart(2, '0')
+  }
+}
+</wxs>
+
+<view class="container">
+  <!-- 导航栏 -->
+  <navigation-bar
+    title="支出详情"
+    back="{{true}}"
+    color="white"
+    background="#4CAF50"
+  ></navigation-bar>
+
+  <!-- 主要内容 - 使用scroll-view -->
+  <scroll-view scroll-y="true" class="scroll-content" enhanced="true" bounces="false">
+    <view class="content">
+      <!-- 加载状态 -->
+      <view wx:if="{{isLoading}}" class="loading-container">
+        <view class="loading-icon">⏳</view>
+        <view class="loading-text">加载中...</view>
+      </view>
+
+      <view wx:else>
+        <!-- 支出详情卡片 -->
+        <view class="expense-detail-card">
+          <view class="expense-header">
+            <view class="expense-amount">¥{{utils.formatAmount(expense.amount)}}</view>
+            <view class="expense-category">{{expense.category}}</view>
+          </view>
+
+          <!-- 描述 -->
+          <view class="detail-item">
+            <view class="detail-label">描述</view>
+            <view class="detail-value">{{expense.description || '无备注'}}</view>
+          </view>
+
+          <!-- 支付者 -->
+          <view class="detail-item">
+            <view class="detail-label">支付者</view>
+            <view class="detail-value">{{expense.payerName}}</view>
+          </view>
+
+          <!-- 日期 -->
+          <view class="detail-item">
+            <view class="detail-label">日期</view>
+            <view class="detail-value">{{utils.formatDate(expense.date)}}</view>
+          </view>
+
+          <!-- 创建时间 -->
+          <view class="detail-item">
+            <view class="detail-label">创建时间</view>
+            <view class="detail-value">{{utils.formatDateTime(expense.createdAt)}}</view>
+          </view>
+
+          <!-- 参与人 -->
+          <view class="detail-item">
+            <view class="detail-label">参与AA的人员（{{expense.participants.length}}人）</view>
+            <view class="participants-list">
+              <view wx:for="{{expense.participants}}" wx:key="userId" class="participant-item">
+                <image wx:if="{{item.avatarUrl}}" class="participant-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+                <view wx:else class="participant-avatar">
+                  {{item.userName ? item.userName.charAt(0) : '?'}}
+                </view>
+                <view class="participant-name">{{item.userName}}</view>
+                <view wx:if="{{item.userId === expense.payerId}}" class="participant-role">支付者</view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 操作按钮 -->
+        <view wx:if="{{canEdit}}" class="action-buttons">
+          <button
+            class="action-button secondary"
+            bindtap="onEdit"
+          >
+            编辑
+          </button>
+          <button
+            class="action-button danger"
+            bindtap="onDelete"
+          >
+            删除
+          </button>
+        </view>
+
+        <view wx:else class="action-buttons">
+          <button
+            class="action-button secondary"
+            disabled="{{true}}"
+          >
+            仅查看（仅支付者可编辑）
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 删除确认对话框 -->
+  <view wx:if="{{showDeleteConfirm}}" class="confirm-dialog">
+    <view class="dialog-content">
+      <view class="dialog-title">确认删除</view>
+      <view class="dialog-message">
+        确定要删除这笔支出记录吗？<text style="color: #F44336; font-weight: bold;">此操作无法撤销。</text>
+      </view>
+      <view class="dialog-buttons">
+        <button class="dialog-button cancel" bindtap="onCancelDelete">取消</button>
+        <button class="dialog-button confirm" bindtap="onConfirmDelete">确认删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 滑动删除提示 -->
+  <view wx:if="{{showSwipeDelete}}" class="confirm-dialog">
+    <view class="dialog-content">
+      <view class="dialog-title">滑动确认删除</view>
+      <view class="dialog-message">
+        为防止误操作，请向右滑动确认删除
+      </view>
+      <view class="swipe-delete">
+        <view
+          class="swipe-content"
+          style="transform: translateX({{swipeOffset}}rpx)"
+          bindtouchstart="onSwipeStart"
+          bindtouchmove="onSwipeMove"
+          bindtouchend="onSwipeEnd"
+        >
+          <view style="padding: 40rpx; background: white; border-radius: 16rpx; text-align: center;">
+            <view style="font-size: 48rpx; margin-bottom: 20rpx;">→</view>
+            <view style="font-size: 28rpx; color: #666;">向右滑动删除</view>
+          </view>
+        </view>
+        <view class="swipe-actions">
+          <view class="delete-button">删除</view>
+        </view>
+      </view>
+      <view style="margin-top: 30rpx;">
+        <button class="dialog-button cancel" bindtap="onCancelSwipeDelete">取消</button>
+      </view>
+    </view>
+  </view>
+</view>

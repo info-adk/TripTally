@@ -1,0 +1,52 @@
+<wxs module="utils">
+module.exports = {
+  formatAmount: function(amount) {
+    if (typeof amount === 'string') {
+      amount = parseFloat(amount)
+    }
+    return amount.toFixed(2)
+  },
+  formatDate: function(dateStr) {
+    if (!dateStr) return ''
+    var date = getDate(dateStr)
+    return (date.getMonth() + 1) + '月' + date.getDate() + '日'
+  }
+}
+</wxs>
+
+<view class="container">
+  <navigation-bar title="全部支出" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <scroll-view scroll-y="true" class="scroll-content" enhanced="true" bounces="false">
+    <view class="content">
+      <!-- 加载状态 -->
+      <view wx:if="{{isLoading}}" class="loading">
+        <text>加载中...</text>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:elif="{{expenses.length === 0}}" class="empty-state">
+        <view class="empty-icon">📝</view>
+        <text class="empty-text">暂无支出记录</text>
+      </view>
+
+      <!-- 支出列表 -->
+      <view wx:else class="expense-list">
+        <view wx:for="{{expenses}}" wx:key="_id" class="expense-item" bindtap="onExpenseTap" data-id="{{item._id}}">
+          <view class="expense-left">
+            <view class="expense-header">
+              <text class="expense-category">{{item.category}}</text>
+              <text class="expense-amount">¥{{utils.formatAmount(item.amount)}}</text>
+            </view>
+            <view class="expense-desc">{{item.description || '无备注'}}</view>
+            <view class="expense-meta">
+              <text class="expense-date">{{utils.formatDate(item.date)}}</text>
+              <text class="expense-payer">{{item.payerName}} 支付</text>
+            </view>
+          </view>
+          <view class="expense-arrow">›</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

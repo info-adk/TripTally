@@ -1,0 +1,145 @@
+page {
+  height: 100%;
+  background: #f5f7fa;
+}
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-content {
+  flex: 1;
+  height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content {
+  padding: 24rpx;
+}
+
+.loading {
+  text-align: center;
+  padding: 120rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 40rpx;
+}
+
+.empty-text {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.total-card {
+  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+  border-radius: 24rpx;
+  padding: 48rpx;
+  text-align: center;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(76, 175, 80, 0.3);
+}
+
+.total-label {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 12rpx;
+}
+
+.total-amount {
+  font-size: 64rpx;
+  font-weight: bold;
+  color: white;
+}
+
+.detail-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.category-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.category-color {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 8rpx;
+  margin-right: 20rpx;
+  margin-top: 10rpx;
+  flex-shrink: 0;
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.category-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.category-amount {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.category-bar {
+  height: 16rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  margin-bottom: 10rpx;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+
+.category-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.category-percent {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.category-count {
+  font-size: 24rpx;
+  color: #999;
+}

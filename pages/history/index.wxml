@@ -1,0 +1,61 @@
+<wxs module="utils">
+module.exports = {
+  formatAmount: function(amount) {
+    if (typeof amount === 'string') {
+      amount = parseFloat(amount)
+    }
+    return amount.toFixed(2)
+  },
+  formatTime: function(dateStr) {
+    if (!dateStr) return ''
+    var date = getDate(dateStr)
+    return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0')
+  }
+}
+</wxs>
+
+<view class="container">
+  <navigation-bar title="历史记录" back="{{true}}" color="white" background="#4CAF50" />
+
+  <scroll-view scroll-y="true" class="scroll-content" enhanced="true" bounces="false">
+    <view class="content">
+      <!-- 时间线视图 -->
+      <view class="timeline">
+        <view wx:for="{{historyList}}" wx:key="dateStr" class="timeline-item">
+          <view class="timeline-date">
+            <view class="date-badge">{{item.dateStr}}</view>
+          </view>
+          <view class="timeline-content">
+            <view wx:for="{{item.records}}" wx:key="_id" wx:for-item="record" class="history-card">
+              <view class="card-header">
+                <text class="version-time">{{utils.formatTime(record.operatedAt)}}</text>
+                <text class="version-action {{record.operation}}">{{record.actionText}}</text>
+              </view>
+              <view class="card-body">
+                <view class="expense-summary">
+                  <text class="expense-title">{{record.description || record.data.category}}</text>
+                  <text class="expense-amount">¥{{utils.formatAmount(record.amount)}}</text>
+                </view>
+                <view class="backup-info">
+                  <text class="backup-user">操作人：{{record.operatedByName}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:if="{{historyList.length === 0 && !isLoading}}" class="empty-state">
+        <view class="empty-icon">📋</view>
+        <text class="empty-text">暂无历史记录</text>
+        <text class="empty-hint">每次支出增删改都会记录</text>
+      </view>
+
+      <!-- 加载状态 -->
+      <view wx:if="{{isLoading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

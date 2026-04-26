@@ -1,0 +1,67 @@
+<!-- pages/join-room/index.wxml -->
+<view class="container">
+  <!-- 导航栏 -->
+  <navigation-bar title="加入房间" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <!-- 主要内容 - 使用scroll-view -->
+  <scroll-view scroll-y="true" class="scroll-content" enhanced="true" bounces="false">
+    <view class="content">
+      <view class="form-card">
+        <view class="form-title">加入已有房间</view>
+
+        <!-- 房间码输入 -->
+        <view class="form-group">
+          <view class="form-label">6位房间密码</view>
+          <input
+            class="form-input"
+            placeholder="请输入6位数字密码"
+            value="{{roomCode}}"
+            bindinput="onRoomCodeInput"
+            type="number"
+            maxlength="6"
+          />
+          <view class="form-hint">请输入创建者分享的6位数字密码</view>
+        </view>
+
+        <!-- 错误提示 -->
+        <view wx:if="{{errorMessage}}" class="error-message">
+          {{errorMessage}}
+        </view>
+
+        <!-- 加入按钮 -->
+        <button
+          class="primary-button"
+          bindtap="onJoinRoom"
+          loading="{{isLoading}}"
+          disabled="{{isLoading}}"
+        >
+          {{isLoading ? '加入中...' : '加入房间'}}
+        </button>
+
+        <!-- 分割线 -->
+        <view class="divider">
+          <view class="divider-line"></view>
+          <view class="divider-text">或者</view>
+          <view class="divider-line"></view>
+        </view>
+
+        <!-- 创建房间按钮 -->
+        <button
+          class="secondary-button"
+          bindtap="goToCreateRoom"
+        >
+          创建新房间
+        </button>
+
+        <!-- 加入说明 -->
+        <view class="info-card">
+          <view class="info-title">如何加入？</view>
+          <view class="info-item">• 获取房间创建者分享的6位数字密码</view>
+          <view class="info-item">• 输入房间密码即可加入</view>
+          <view class="info-item">• 点击"加入房间"开始记账</view>
+          <view class="info-item">• 房间最多支持5人同时使用</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

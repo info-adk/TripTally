@@ -1,0 +1,36 @@
+<view class="container">
+  <navigation-bar title="我的房间" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <scroll-view scroll-y="true" class="scroll-content">
+    <view class="content">
+      <view wx:if="{{rooms.length === 0}}" class="empty-state">
+        <view class="empty-icon">🏠</view>
+        <text class="empty-text">暂无已加入的房间</text>
+        <text class="empty-hint">快去创建或加入一个房间吧</text>
+        <button class="btn-create" bindtap="goToCreateRoom">创建房间</button>
+      </view>
+
+      <view wx:else class="room-list">
+        <view wx:for="{{rooms}}" wx:key="roomId" class="room-item">
+          <view class="room-info" bindtap="onRoomTap" data-room="{{item}}">
+            <view class="room-name">{{item.roomName || '未命名房间'}}</view>
+            <view class="room-code">密码: {{item.roomCode}}</view>
+            <view class="room-meta">
+              <text wx:if="{{item.isCreator}}" class="tag creator">创建者</text>
+              <text wx:else class="tag member">成员</text>
+            </view>
+          </view>
+          <view class="room-actions">
+            <view class="leave-btn" bindtap="onLeaveRoom" data-room="{{item}}">离开</view>
+            <text class="room-arrow">›</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="actions">
+        <button class="btn-secondary" bindtap="goToCreateRoom">创建新房间</button>
+        <button class="btn-secondary" bindtap="goToJoinRoom">加入房间</button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

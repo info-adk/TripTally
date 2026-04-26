@@ -1,0 +1,278 @@
+page {
+  height: 100%;
+  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+}
+
+.container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 昵称弹窗 */
+.nickname-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.nickname-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 560rpx;
+  background: white;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx;
+}
+
+.dialog-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.dialog-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.dialog-desc {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 40rpx;
+}
+
+.nickname-input {
+  width: 100%;
+  height: 88rpx;
+  background: #f5f5f5;
+  border-radius: 44rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  text-align: center;
+  margin-bottom: 40rpx;
+  box-sizing: border-box;
+}
+
+.confirm-btn {
+  width: 100%;
+  height: 88rpx;
+  background: #4CAF50;
+  color: white;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-btn::after {
+  border: none;
+}
+
+.confirm-btn:active {
+  background: #45a049;
+}
+
+.scroll-content {
+  flex: 1;
+  height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 200rpx 0;
+}
+
+.welcome-section {
+  text-align: center;
+  color: white;
+  margin-bottom: 40rpx;
+}
+
+.app-logo {
+  font-size: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.app-title {
+  font-size: 52rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+  text-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.app-subtitle {
+  font-size: 26rpx;
+  opacity: 0.9;
+  margin-bottom: 24rpx;
+}
+
+/* 昵称显示区域 */
+.nickname-section {
+  padding: 0 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.nickname-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 44rpx;
+  height: 88rpx;
+  padding: 0 30rpx;
+}
+
+.nickname-text {
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-right: 20rpx;
+}
+
+.edit-nickname {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  text-decoration: underline;
+}
+
+/* 修改昵称弹窗 */
+.edit-nickname-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.edit-nickname-dialog {
+  width: 560rpx;
+  background: white;
+  border-radius: 24rpx;
+  padding: 40rpx;
+}
+
+.edit-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  margin-bottom: 30rpx;
+}
+
+.edit-input {
+  width: 100%;
+  height: 80rpx;
+  background: #f5f5f5;
+  border-radius: 16rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+  margin-bottom: 30rpx;
+  box-sizing: border-box;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.btn-confirm {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-cancel::after,
+.btn-confirm::after {
+  border: none;
+}
+
+.actions-section {
+  padding: 0 30rpx;
+  margin-bottom: 40rpx;
+}
+
+.btn-my-rooms,
+.btn-create {
+  width: 100%;
+  height: 88rpx;
+  background: white;
+  color: #4CAF50;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  margin-bottom: 20rpx;
+  border: none;
+}
+
+.btn-join {
+  width: 100%;
+  height: 88rpx;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  margin-bottom: 20rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-join:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.instructions {
+  margin: 0 30rpx;
+  padding: 30rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20rpx;
+  color: white;
+  margin-bottom: 40rpx;
+}
+
+.instruction-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.instruction-step {
+  font-size: 24rpx;
+  line-height: 1.8;
+  opacity: 0.9;
+  padding-left: 8rpx;
+}

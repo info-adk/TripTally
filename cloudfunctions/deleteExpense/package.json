@@ -1,0 +1,9 @@
+{
+  "name": "deleteExpense",
+  "version": "1.0.0",
+  "description": "删除支出记录",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,48 @@
+<view class="container">
+  <navigation-bar title="支出统计" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <scroll-view scroll-y="true" class="scroll-content">
+    <view class="content">
+      <!-- 加载状态 -->
+      <view wx:if="{{isLoading}}" class="loading">
+        <text>加载中...</text>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:elif="{{totalAmount === 0}}" class="empty-state">
+        <view class="empty-icon">📊</view>
+        <text class="empty-text">暂无支出数据</text>
+      </view>
+
+      <view wx:else>
+        <!-- 总支出 -->
+        <view class="total-card">
+          <view class="total-label">总支出</view>
+          <view class="total-amount">¥{{totalAmountStr}}</view>
+        </view>
+
+        <!-- 类别明细 -->
+        <view class="detail-card">
+          <view class="category-list">
+            <view wx:for="{{categoryStats}}" wx:key="category" class="category-item">
+              <view class="category-color" style="background: {{item.color}}"></view>
+              <view class="category-info">
+                <view class="category-header">
+                  <text class="category-name">{{item.icon}} {{item.category}}</text>
+                  <text class="category-amount">¥{{item.amountStr}}</text>
+                </view>
+                <view class="category-bar">
+                  <view class="category-bar-fill" style="width: {{item.percent}}%; background: {{item.color}}"></view>
+                </view>
+                <view class="category-footer">
+                  <text class="category-percent">{{item.percentStr}}%</text>
+                  <text class="category-count">{{item.count}}笔</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

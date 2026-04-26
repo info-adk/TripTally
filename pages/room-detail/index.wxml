@@ -1,0 +1,95 @@
+<view class="container">
+  <!-- 导航栏 -->
+  <navigation-bar title="房间详情" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <!-- 主要内容 -->
+  <scroll-view scroll-y="true" class="scroll-content">
+    <view class="content">
+      <!-- 加载状态 -->
+      <view wx:if="{{isLoading}}" class="loading">
+        <text>加载中...</text>
+      </view>
+
+      <view wx:else>
+        <!-- 房间信息 -->
+        <view class="card room-card">
+          <view class="room-name">{{roomInfo.roomName}}</view>
+          <view class="room-code-box">
+            <text class="label">房间密码</text>
+            <text class="code">{{roomInfo.roomCode}}</text>
+            <text class="copy" bindtap="onCopyRoomCode">复制</text>
+          </view>
+        </view>
+
+        <!-- 快捷操作 -->
+        <view class="quick-btns">
+          <view class="quick-btn" bindtap="goToAddExpense">
+            <text class="icon">➕</text>
+            <text>添加支出</text>
+          </view>
+          <view class="quick-btn" bindtap="goToSettlement">
+            <text class="icon">🧮</text>
+            <text>查看结算</text>
+          </view>
+          <view class="quick-btn" bindtap="goToStatistics">
+            <text class="icon">📊</text>
+            <text>支出统计</text>
+          </view>
+          <view class="quick-btn" bindtap="goToHistory">
+            <text class="icon">📜</text>
+            <text>历史记录</text>
+          </view>
+        </view>
+
+        <!-- 成员 -->
+        <view class="card">
+          <view class="card-title">成员 ({{members.length}}/5)</view>
+          <view class="members">
+            <view wx:for="{{members}}" wx:key="userId" class="member">
+              <image wx:if="{{item.avatarUrl}}" class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+              <view wx:else class="avatar">{{item.userName.charAt(0)}}</view>
+              <text class="name">{{item.userName}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- AA结算 -->
+        <view wx:if="{{aaResult && aaResult.totalAmount > 0}}" class="card aa-card">
+          <view class="card-title">AA结算</view>
+          <view class="aa-total">总支出: ¥{{aaResult.totalAmount}}</view>
+          <view class="balances">
+            <view wx:for="{{aaResult.balances}}" wx:key="userId" class="balance-item">
+              <text>{{item.userName}}</text>
+              <text class="{{item.net >= 0 ? 'positive' : 'negative'}}">
+                {{item.net >= 0 ? '+' : ''}}{{item.net}}
+              </text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 支出列表 -->
+        <view class="card">
+          <view class="card-title">最近支出</view>
+          <view wx:if="{{expenses.length === 0}}" class="empty">
+            <text>暂无支出记录</text>
+          </view>
+          <view wx:else>
+            <view wx:for="{{displayExpenses}}" wx:key="_id" class="expense-item" bindtap="onExpenseTap" data-id="{{item._id}}">
+              <view class="expense-left">
+                <text class="expense-amount">¥{{item.amount}}</text>
+                <text class="expense-desc">{{item.description || item.category}}</text>
+                <text class="expense-creator">添加人: {{item.createdByName || item.payerName}}</text>
+              </view>
+              <view class="expense-right">
+                <text class="expense-category">{{item.category}}</text>
+              </view>
+            </view>
+            <view wx:if="{{expenses.length > 3}}" class="view-more" bindtap="goToAllExpenses">
+              <text>查看全部 {{expenses.length}} 条支出 ›</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

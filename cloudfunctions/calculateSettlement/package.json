@@ -1,0 +1,9 @@
+{
+  "name": "calculateSettlement",
+  "version": "1.0.0",
+  "description": "计算AA结算方案云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "createHistoryBackup",
+  "version": "1.0.0",
+  "description": "创建历史备份云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

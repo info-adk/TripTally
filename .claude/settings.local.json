@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check cloudfunctions/deleteExpense/index.js)",
+      "Bash(node --check pages/settlement/index.js)",
+      "Bash(node --check pages/history/index.js)",
+      "Bash(node --check cloudfunctions/getExpenseHistory/index.js)",
+      "Bash(node --check cloudfunctions/restoreFromHistory/index.js)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(node *)"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "updateUserNickname",
+  "version": "1.0.0",
+  "description": "同步更新云数据库中所有使用旧昵称的文档",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

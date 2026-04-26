@@ -1,0 +1,66 @@
+<!-- pages/create-room/index.wxml -->
+<view class="container">
+  <!-- 导航栏 -->
+  <navigation-bar title="创建房间" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
+
+  <!-- 主要内容 - 使用scroll-view -->
+  <scroll-view scroll-y="true" class="scroll-content" enhanced="true" bounces="false">
+    <view class="content">
+      <view class="form-card">
+        <view class="form-title">创建新的旅行房间</view>
+
+        <!-- 房间名称输入 -->
+        <view class="form-group">
+          <view class="form-label">房间名称（可选）</view>
+          <input
+            class="form-input"
+            placeholder="例如：五一旅行、周末出游"
+            value="{{roomName}}"
+            bindinput="onRoomNameInput"
+            maxlength="20"
+          />
+          <view class="form-hint">便于识别的房间名称</view>
+        </view>
+
+        <!-- 错误提示 -->
+        <view wx:if="{{errorMessage}}" class="error-message">
+          {{errorMessage}}
+        </view>
+
+        <!-- 创建按钮 -->
+        <button
+          class="primary-button"
+          bindtap="onCreateRoom"
+          loading="{{isLoading}}"
+          disabled="{{isLoading}}"
+        >
+          {{isLoading ? '创建中...' : '创建房间'}}
+        </button>
+
+        <!-- 分割线 -->
+        <view class="divider">
+          <view class="divider-line"></view>
+          <view class="divider-text">或者</view>
+          <view class="divider-line"></view>
+        </view>
+
+        <!-- 加入房间按钮 -->
+        <button
+          class="secondary-button"
+          bindtap="goToJoinRoom"
+        >
+          加入已有房间
+        </button>
+
+        <!-- 房间规则说明 -->
+        <view class="info-card">
+          <view class="info-title">房间规则</view>
+          <view class="info-item">• 最多支持5人共享记账</view>
+          <view class="info-item">• 自动计算AA分摊</view>
+          <view class="info-item">• 支持查看历史版本和恢复</view>
+          <view class="info-item">• 数据实时同步</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

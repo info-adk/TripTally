@@ -1,0 +1,54 @@
+<view class="container">
+  <!-- 首次进入的昵称弹窗 -->
+  <view wx:if="{{showNicknameModal}}" class="nickname-modal">
+    <view class="nickname-dialog">
+      <view class="dialog-icon">✈️</view>
+      <view class="dialog-title">欢迎使用TripTally</view>
+      <view class="dialog-desc">请输入您的昵称</view>
+      <input class="nickname-input" type="text" placeholder="请输入昵称" bindinput="onNicknameInput" value="{{tempNickname}}" />
+      <button class="confirm-btn" bindtap="onConfirmNickname">确认</button>
+    </view>
+  </view>
+
+  <!-- 已填写昵称后显示 -->
+  <scroll-view scroll-y="true" class="scroll-content">
+    <view class="welcome-section">
+      <view class="app-logo">✈️</view>
+      <view class="app-title">TripTally</view>
+      <view class="app-subtitle">轻松记账</view>
+    </view>
+
+    <view class="nickname-section">
+      <view class="nickname-display">
+        <text class="nickname-text">{{userName}}</text>
+        <text class="edit-nickname" bindtap="onEditNickname">修改</text>
+      </view>
+    </view>
+
+    <view class="actions-section">
+      <button class="btn-my-rooms" bindtap="goToMyRooms">🏠 我的房间</button>
+      <button class="btn-create" bindtap="goToCreateRoom">创建新房间</button>
+      <button class="btn-join" bindtap="goToJoinRoom">加入已有房间</button>
+    </view>
+
+    <view class="instructions">
+      <view class="instruction-title">如何使用？</view>
+      <view class="instruction-step">1. 创建房间或输入6位密码加入</view>
+      <view class="instruction-step">2. 记录旅行中的共同支出</view>
+      <view class="instruction-step">3. 系统自动计算AA分摊结果</view>
+      <view class="instruction-step">4. 根据建议完成转账结算</view>
+    </view>
+  </scroll-view>
+
+  <!-- 修改昵称的弹窗 -->
+  <view wx:if="{{isEditingNickname}}" class="edit-nickname-overlay">
+    <view class="edit-nickname-dialog">
+      <view class="edit-title">修改昵称</view>
+      <input class="edit-input" type="text" placeholder="请输入新昵称" bindinput="onNicknameInput" value="{{tempNickname}}" />
+      <view class="edit-buttons">
+        <button class="btn-cancel" bindtap="onCancelEdit">取消</button>
+        <button class="btn-confirm" bindtap="onConfirmUpdateNickname">确认</button>
+      </view>
+    </view>
+  </view>
+</view>
