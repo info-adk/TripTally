@@ -21,7 +21,7 @@ exports.main = async (event, context) => {
     date,
     participants,
     userId,
-    userName = '用户'
+    userName
   } = event
 
   // 参数验证
@@ -31,6 +31,10 @@ exports.main = async (event, context) => {
 
   if (!roomId) {
     return { success: false, message: '房间ID不能为空' }
+  }
+
+  if (!userId || !userName || !userName.trim()) {
+    return { success: false, message: '用户信息不完整，请重新进入小程序' }
   }
 
   if (!amount || amount <= 0) {

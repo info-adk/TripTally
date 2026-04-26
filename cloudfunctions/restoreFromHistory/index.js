@@ -10,10 +10,14 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { versionId, expenseId, userId, userName = '用户' } = event
+  const { versionId, expenseId, userId, userName } = event
 
   if (!versionId && !expenseId) {
     return { success: false, message: '需要提供versionId或expenseId' }
+  }
+
+  if (!userId || !userName || !userName.trim()) {
+    return { success: false, message: '用户信息不完整' }
   }
 
   try {

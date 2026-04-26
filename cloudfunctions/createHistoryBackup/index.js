@@ -9,10 +9,14 @@ cloud.init({
 exports.main = async (event, context) => {
   const db = cloud.database()
 
-  const { expenseId, userId, userName = '用户', operation, reason = '' } = event
+  const { expenseId, userId, userName, operation, reason = '' } = event
 
   if (!expenseId || !operation) {
     return { success: false, message: '参数不完整' }
+  }
+
+  if (!userId || !userName || !userName.trim()) {
+    return { success: false, message: '用户信息不完整' }
   }
 
   try {

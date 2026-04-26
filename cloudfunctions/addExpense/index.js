@@ -13,17 +13,21 @@ exports.main = async (event, context) => {
   const {
     roomId,
     userId,
-    userName = '用户',
+    userName,
     avatarUrl = '',
     amount,
     category = '其他',
     description = '',
-    participants = [] // 参与人员ID数组
+    participants = []
   } = event
 
   // 参数验证
   if (!roomId) {
     return { success: false, message: '房间ID不能为空' }
+  }
+
+  if (!userId || !userName || !userName.trim()) {
+    return { success: false, message: '用户信息不完整，请重新进入小程序' }
   }
 
   if (!amount || amount <= 0) {

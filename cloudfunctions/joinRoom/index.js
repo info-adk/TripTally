@@ -10,12 +10,19 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { roomCode, userId, userName = '用户', avatarUrl = '' } = event
+  const { roomCode, userId, userName, avatarUrl = '' } = event
 
   if (!roomCode || roomCode.length !== 6) {
     return {
       success: false,
       message: '请输入6位房间码'
+    }
+  }
+
+  if (!userId || !userName || !userName.trim()) {
+    return {
+      success: false,
+      message: '用户信息不完整，请重新进入小程序'
     }
   }
 

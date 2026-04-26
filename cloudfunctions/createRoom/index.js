@@ -15,9 +15,17 @@ exports.main = async (event, context) => {
   const db = cloud.database()
   const _ = db.command
 
-  const { roomName = '未命名房间', userId, userName = '用户', avatarUrl = '' } = event
+  const { roomName, userId, userName, avatarUrl = '' } = event
 
   try {
+    // 验证参数
+    if (!userId || !userName || !userName.trim()) {
+      return {
+        success: false,
+        message: '用户信息不完整，请重新进入小程序'
+      }
+    }
+
     // 生成唯一的房间码
     let roomCode
     let isUnique = false
