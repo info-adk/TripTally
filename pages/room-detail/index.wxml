@@ -1,3 +1,17 @@
+<wxs module="utils">
+module.exports = {
+  formatDateTime: function(dateStr) {
+    if (!dateStr) return ''
+    var date = getDate(dateStr)
+    var hours = String(date.getHours()).padStart(2, '0')
+    var minutes = String(date.getMinutes()).padStart(2, '0')
+    return (date.getMonth() + 1) + '-' +
+           String(date.getDate()).padStart(2, '0') + ' ' +
+           hours + ':' + minutes
+  }
+}
+</wxs>
+
 <view class="container">
   <!-- 导航栏 -->
   <navigation-bar title="房间详情" back="{{true}}" color="white" background="#4CAF50"></navigation-bar>
@@ -82,6 +96,7 @@
               </view>
               <view class="expense-right">
                 <text class="expense-category">{{item.category}}</text>
+                <text class="expense-time">{{utils.formatDateTime(item.createdAt)}}</text>
               </view>
             </view>
             <view wx:if="{{expenses.length > 3}}" class="view-more" bindtap="goToAllExpenses">

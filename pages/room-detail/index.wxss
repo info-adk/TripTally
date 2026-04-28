@@ -245,6 +245,12 @@ page {
   background: #4CAF50;
   padding: 6rpx 16rpx;
   border-radius: 14rpx;
+  margin-right: 16rpx;
+}
+
+.expense-time {
+  font-size: 22rpx;
+  color: #999;
 }
 
 .bottom-bar {

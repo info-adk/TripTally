@@ -10,6 +10,13 @@ module.exports = {
     if (!dateStr) return ''
     var date = getDate(dateStr)
     return (date.getMonth() + 1) + '月' + date.getDate() + '日'
+  },
+  formatDateTime: function(dateStr) {
+    if (!dateStr) return ''
+    var date = getDate(dateStr)
+    var hours = String(date.getHours()).padStart(2, '0')
+    var minutes = String(date.getMinutes()).padStart(2, '0')
+    return hours + ':' + minutes
   }
 }
 </wxs>
@@ -32,19 +39,25 @@ module.exports = {
 
       <!-- 支出列表 -->
       <view wx:else class="expense-list">
-        <view wx:for="{{expenses}}" wx:key="_id" class="expense-item" bindtap="onExpenseTap" data-id="{{item._id}}">
-          <view class="expense-left">
-            <view class="expense-header">
-              <text class="expense-category">{{item.category}}</text>
-              <text class="expense-amount">¥{{utils.formatAmount(item.amount)}}</text>
-            </view>
-            <view class="expense-desc">{{item.description || '无备注'}}</view>
-            <view class="expense-meta">
-              <text class="expense-date">{{utils.formatDate(item.date)}}</text>
-              <text class="expense-payer">{{item.payerName}} 支付</text>
-            </view>
+        <view wx:for="{{groupedExpenses}}" wx:key="date" class="date-group">
+          <view class="date-header">
+            <text class="date-title">{{utils.formatDate(item.date)}}</text>
+            <text class="date-total">¥{{utils.formatAmount(item.total)}}</text>
           </view>
-          <view class="expense-arrow">›</view>
+          <view wx:for="{{item.expenses}}" wx:key="_id" class="expense-item" bindtap="onExpenseTap" data-id="{{item._id}}">
+            <view class="expense-left">
+              <view class="expense-header">
+                <text class="expense-category">{{item.category}}</text>
+                <text class="expense-amount">¥{{utils.formatAmount(item.amount)}}</text>
+              </view>
+              <view class="expense-desc">{{item.description || '无备注'}}</view>
+              <view class="expense-meta">
+                <text class="expense-time">{{utils.formatDateTime(item.createdAt)}}</text>
+                <text class="expense-payer">{{item.payerName}} 支付</text>
+              </view>
+            </view>
+            <view class="expense-arrow">›</view>
+          </view>
         </view>
       </view>
     </view>

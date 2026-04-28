@@ -119,3 +119,32 @@ page {
   color: #ccc;
   margin-left: 24rpx;
 }
+
+.date-group {
+  margin-bottom: 24rpx;
+}
+
+.date-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 32rpx;
+  background: #4CAF50;
+  color: white;
+  border-radius: 20rpx 20rpx 0 0;
+}
+
+.date-title {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.date-total {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.expense-time {
+  font-size: 24rpx;
+  color: #999;
+}

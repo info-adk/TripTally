@@ -14,6 +14,7 @@ exports.main = async (event, context) => {
     roomId,
     userName,
     amount,
+    date,
     category = '其他',
     description = '',
     participants = []
@@ -97,7 +98,7 @@ exports.main = async (event, context) => {
       amount: parseFloat(amount.toFixed(2)),
       category,
       description,
-      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD格式
+      date: date || new Date().toISOString().split('T')[0], // YYYY-MM-DD格式，支持前端传入
       createdAt: db.serverDate(),
       updatedAt: db.serverDate(),
       participants: finalParticipants,

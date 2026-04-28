@@ -42,8 +42,11 @@ Page({
       .orderBy('createdAt', 'desc')
       .get({
         success: (res) => {
+          const expenses = res.data || []
+          const groupedExpenses = this.groupExpensesByDate(expenses)
           this.setData({
-            expenses: res.data || [],
+            expenses: expenses,
+            groupedExpenses: groupedExpenses,
             isLoading: false
           })
         },
@@ -56,6 +59,25 @@ Page({
           this.setData({ isLoading: false })
         }
       })
+  },
+
+  groupExpensesByDate: function(expenses) {
+    const groups = {}
+    expenses.forEach(expense => {
+      const dateStr = expense.date || expense.createdAt
+      if (!dateStr) return
+      const dateKey = dateStr.substr(0, 10)
+      if (!groups[dateKey]) {
+        groups[dateKey] = {
+          date: dateKey,
+          total: 0,
+          expenses: []
+        }
+      }
+      groups[dateKey].expenses.push(expense)
+      groups[dateKey].total = Math.round((groups[dateKey].total + expense.amount) * 100) / 100
+    })
+    return Object.values(groups).sort((a, b) => b.date.localeCompare(a.date))
   },
 
   // 点击支出项
