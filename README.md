@@ -1,5 +1,9 @@
 # TripTally
 
+<p align="center">
+  <img src="logo.png" alt="TripTally Logo" width="200">
+</p>
+
 多人 AA 记账微信小程序，专为 5 人以下小团队旅行记账设计。
 
 ## 功能特性
