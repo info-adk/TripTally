@@ -54,29 +54,57 @@ Page({
 
   loadExpenses: function() {
     this.setData({ isLoading: true })
-    console.log('开始加载支出, roomId:', this.data.roomId)
-
     const db = wx.cloud.database()
-    db.collection('expenses')
-      .where({
-        roomId: this.data.roomId
-      })
-      .get({
-        success: (res) => {
-          console.log('加载支出成功, 数据:', res.data)
-          const expenses = res.data || []
-          this.processData(expenses)
-          this.setData({ isLoading: false })
-        },
-        fail: (err) => {
-          console.error('加载支出失败:', err)
-          wx.showToast({
-            title: '加载失败',
-            icon: 'error'
+    const roomId = this.data.roomId
+    const _this = this
+
+    // 分页获取全部支出记录（微信云数据库单次最多返回20条）
+    const MAX_LIMIT = 20
+
+    // 获取单页数据
+    const getPage = (skip) => {
+      return new Promise((resolve, reject) => {
+        db.collection('expenses')
+          .where({ roomId })
+          .skip(skip)
+          .limit(MAX_LIMIT)
+          .get({
+            success: res => resolve(res.data || []),
+            fail: err => reject(err)
           })
-          this.setData({ isLoading: false })
-        }
       })
+    }
+
+    // 先获取第一页
+    getPage(0).then(firstBatch => {
+      if (firstBatch.length < MAX_LIMIT) {
+        // 不足一页，没有更多数据
+        _this.processData(firstBatch)
+        _this.setData({ isLoading: false })
+        return
+      }
+
+      // 继续获取后续页数据
+      const promises = []
+      for (let skip = MAX_LIMIT; skip < 2000; skip += MAX_LIMIT) {
+        promises.push(getPage(skip))
+      }
+
+      return Promise.all(promises).then(batches => {
+        let expenses = [...firstBatch]
+        batches.forEach(batch => {
+          if (batch && batch.length > 0) {
+            expenses = expenses.concat(batch)
+          }
+        })
+        _this.processData(expenses)
+        _this.setData({ isLoading: false })
+      })
+    }).catch(err => {
+      console.error('加载支出失败:', err)
+      wx.showToast({ title: '加载失败', icon: 'error' })
+      _this.setData({ isLoading: false })
+    })
   },
 
   processData: function(expenses) {

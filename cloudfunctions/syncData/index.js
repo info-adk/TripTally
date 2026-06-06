@@ -5,6 +5,27 @@ cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
+// 分页查询全部匹配记录（微信云数据库单次默认最多返回20条）
+async function getAllResults(query, orderField, orderDir) {
+  const MAX_LIMIT = 20
+  let allData = []
+  let offset = 0
+  let hasMore = true
+
+  while (hasMore) {
+    const res = await query
+      .orderBy(orderField, orderDir)
+      .skip(offset)
+      .limit(MAX_LIMIT)
+      .get()
+    allData = allData.concat(res.data)
+    offset += MAX_LIMIT
+    hasMore = res.data.length === MAX_LIMIT
+  }
+
+  return allData
+}
+
 // 云函数入口函数
 exports.main = async (event, context) => {
   const db = cloud.database()
@@ -35,19 +56,17 @@ exports.main = async (event, context) => {
       .get()
 
     // 3. 获取支出记录（自上次同步后新增或修改的）
-    const expensesQuery = db.collection('expenses')
+    let expensesQuery = db.collection('expenses')
       .where({ roomId })
 
     if (lastSyncTime) {
-      expensesQuery.where(_.or([
+      expensesQuery = expensesQuery.where(_.or([
         { createdAt: _.gt(syncTime) },
         { updatedAt: _.gt(syncTime) }
       ]))
     }
 
-    const expensesResult = await expensesQuery
-      .orderBy('createdAt', 'desc')
-      .get()
+    const expenses = await getAllResults(expensesQuery, 'createdAt', 'desc')
 
     // 4. 获取最新的结算信息
     const settlementResult = await db.collection('settlements')
@@ -70,7 +89,7 @@ exports.main = async (event, context) => {
       data: {
         room: roomResult.data,
         members: membersResult.data,
-        expenses: expensesResult.data,
+        expenses: expenses,
         latestSettlement: settlementResult.data[0] || null,
         deletedExpenses: deletedExpenses.data.map(h => h.expenseId),
         syncTime: new Date().toISOString()

@@ -96,6 +96,30 @@ function generateSettlement(balances) {
   return settlements
 }
 
+// 分页查询所有未结算支出（微信云数据库单次默认最多返回20条）
+async function getAllExpenses(db, roomId) {
+  const MAX_LIMIT = 20
+  let allData = []
+  let offset = 0
+  let hasMore = true
+
+  while (hasMore) {
+    const res = await db.collection('expenses')
+      .where({
+        roomId,
+        isSettled: false
+      })
+      .skip(offset)
+      .limit(MAX_LIMIT)
+      .get()
+    allData = allData.concat(res.data)
+    offset += MAX_LIMIT
+    hasMore = res.data.length === MAX_LIMIT
+  }
+
+  return allData
+}
+
 // 云函数入口函数
 exports.main = async (event, context) => {
   const db = cloud.database()
@@ -108,13 +132,8 @@ exports.main = async (event, context) => {
   }
 
   try {
-    // 1. 查询房间所有未结算的支出
-    const expensesResult = await db.collection('expenses')
-      .where({
-        roomId,
-        isSettled: false
-      })
-      .get()
+    // 1. 查询房间所有未结算的支出（分页获取全部）
+    const expenses = await getAllExpenses(db, roomId)
 
     // 2. 查询房间所有活跃成员
     const membersResult = await db.collection('room_members')
@@ -135,7 +154,6 @@ exports.main = async (event, context) => {
     }
 
     // 3. 计算AA
-    const expenses = expensesResult.data
     const members = membersResult.data
     const balances = calculateAA(expenses, members)
 

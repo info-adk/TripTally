@@ -137,29 +137,64 @@ Page({
 
   // 加载支出记录
   loadExpenses: function() {
-    return new Promise((resolve, reject) => {
-      const db = wx.cloud.database()
-      db.collection('expenses')
-        .where({
-          roomId: this.data.roomId,
-          isSettled: false
+    const db = wx.cloud.database()
+    const roomId = this.data.roomId
+    const _this = this
+
+    // 分页获取全部未结算支出记录（微信云数据库单次默认最多返回20条）
+    const MAX_LIMIT = 20
+
+    // 获取单页数据
+    const getPage = (skip) => {
+      return new Promise((resolve, reject) => {
+        db.collection('expenses')
+          .where({
+            roomId,
+            isSettled: false
+          })
+          .orderBy('date', 'desc')
+          .orderBy('createdAt', 'desc')
+          .skip(skip)
+          .limit(MAX_LIMIT)
+          .get({
+            success: res => resolve(res.data || []),
+            fail: err => reject(err)
+          })
+      })
+    }
+
+    // 先获取第一页
+    return getPage(0).then(firstBatch => {
+      if (firstBatch.length < MAX_LIMIT) {
+        // 不足一页，没有更多数据
+        _this.setData({
+          expenses: firstBatch,
+          displayExpenses: firstBatch.slice(0, 3)
         })
-        .orderBy('date', 'desc')
-        .orderBy('createdAt', 'desc')
-        .limit(10)
-        .get({
-          success: (res) => {
-            this.setData({
-              expenses: res.data,
-              displayExpenses: res.data.slice(0, 3)
-            })
-            resolve()
-          },
-          fail: (err) => {
-            console.error('加载支出记录失败:', err)
-            reject(err)
+        return
+      }
+
+      // 继续获取后续页数据
+      const promises = []
+      for (let skip = MAX_LIMIT; skip < 2000; skip += MAX_LIMIT) {
+        promises.push(getPage(skip))
+      }
+
+      return Promise.all(promises).then(batches => {
+        let expenses = [...firstBatch]
+        batches.forEach(batch => {
+          if (batch && batch.length > 0) {
+            expenses = expenses.concat(batch)
           }
         })
+        _this.setData({
+          expenses,
+          displayExpenses: expenses.slice(0, 3)
+        })
+      })
+    }).catch(err => {
+      console.error('加载支出记录失败:', err)
+      throw err
     })
   },
 
@@ -280,6 +315,9 @@ Page({
         roomId: this.data.roomId,
         isSettled: false
       })
+      .orderBy('date', 'desc')
+      .orderBy('createdAt', 'desc')
+      .limit(200)
       .watch({
         onChange: (snapshot) => {
           console.log('支出数据变化:', snapshot)
@@ -349,6 +387,7 @@ Page({
       this.loadExpenses()
     ]).then(() => {
       this.calculateAA()
+      this.setupDataWatchers()
       this.setData({ isRefreshing: false })
     }).catch(err => {
       console.error('刷新数据失败:', err)
