@@ -1,6 +1,9 @@
 // pages/room-detail/index.js
 const app = getApp()
 
+// 实时监听器单次最多返回的条数上限（watch 的 limit 上限即为 200，无法调高）
+const WATCH_LIMIT = 200
+
 Page({
   data: {
     roomId: '',
@@ -317,13 +320,21 @@ Page({
       })
       .orderBy('date', 'desc')
       .orderBy('createdAt', 'desc')
-      .limit(200)
+      .limit(WATCH_LIMIT)
       .watch({
         onChange: (snapshot) => {
           console.log('支出数据变化:', snapshot)
+          const docs = snapshot.docs || []
+          if (docs.length >= WATCH_LIMIT) {
+            // snapshot 已被 limit 截断，不能当作全量数据使用，回退到分页查询
+            this.loadExpenses().then(() => this.calculateAA()).catch(err => {
+              console.error('重新加载支出记录失败:', err)
+            })
+            return
+          }
           this.setData({
-            expenses: snapshot.docs,
-            displayExpenses: snapshot.docs.slice(0, 3)
+            expenses: docs,
+            displayExpenses: docs.slice(0, 3)
           })
           this.calculateAA()
         },

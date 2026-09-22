@@ -1,0 +1,9 @@
+{
+  "name": "settleRoom",
+  "version": "1.0.0",
+  "description": "标记房间内全部未结算支出为已结算",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

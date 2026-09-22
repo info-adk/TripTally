@@ -83,20 +83,53 @@ Page({
   },
 
   loadExpenses: function() {
-    return new Promise((resolve, reject) => {
-      const db = wx.cloud.database()
-      db.collection('expenses')
-        .where({
-          roomId: this.data.roomId,
-          isSettled: false
+    const db = wx.cloud.database()
+    const roomId = this.data.roomId
+    const _this = this
+
+    // 分页获取全部未结算支出（微信云数据库单次最多返回20条）
+    const MAX_LIMIT = 20
+
+    const getPage = (skip) => {
+      return new Promise((resolve, reject) => {
+        db.collection('expenses')
+          .where({
+            roomId,
+            isSettled: false
+          })
+          .orderBy('createdAt', 'desc')
+          .skip(skip)
+          .limit(MAX_LIMIT)
+          .get({
+            success: res => resolve(res.data || []),
+            fail: err => reject(err)
+          })
+      })
+    }
+
+    // 先获取第一页
+    return getPage(0).then(firstBatch => {
+      if (firstBatch.length < MAX_LIMIT) {
+        // 不足一页，没有更多数据
+        _this.setData({ expenses: firstBatch })
+        return
+      }
+
+      // 继续获取后续页数据
+      const promises = []
+      for (let skip = MAX_LIMIT; skip < 2000; skip += MAX_LIMIT) {
+        promises.push(getPage(skip))
+      }
+
+      return Promise.all(promises).then(batches => {
+        let expenses = [...firstBatch]
+        batches.forEach(batch => {
+          if (batch && batch.length > 0) {
+            expenses = expenses.concat(batch)
+          }
         })
-        .get({
-          success: (res) => {
-            this.setData({ expenses: res.data })
-            resolve()
-          },
-          fail: reject
-        })
+        _this.setData({ expenses })
+      })
     })
   },
 
@@ -225,39 +258,39 @@ Page({
   doSettlement: function() {
     wx.showLoading({ title: '结算中...' })
 
-    const { expenses } = this.data
-    const expenseIds = expenses.map(e => e._id)
-
-    const db = wx.cloud.database()
-    const _ = db.command
-
-    // 批量更新支出为已结算
-    const batchUpdate = expenseIds.map(id => {
-      return db.collection('expenses').doc(id).update({
-        data: {
-          isSettled: true,
-          settledAt: new Date(),
-          settledByName: app.getUserInfo().userName
+    // 交由云函数批量标记房间内全部未结算支出
+    wx.cloud.callFunction({
+      name: 'settleRoom',
+      data: {
+        roomId: this.data.roomId,
+        userName: app.getUserInfo().userName
+      },
+      success: (res) => {
+        wx.hideLoading()
+        const result = res.result || {}
+        if (!result.success) {
+          wx.showToast({
+            title: result.message || '结算失败',
+            icon: 'error'
+          })
+          return
         }
-      })
-    })
-
-    Promise.all(batchUpdate).then(() => {
-      wx.hideLoading()
-      wx.showToast({
-        title: '结算成功',
-        icon: 'success'
-      })
-      setTimeout(() => {
-        wx.navigateBack()
-      }, 1500)
-    }).catch(err => {
-      wx.hideLoading()
-      console.error('结算失败:', err)
-      wx.showToast({
-        title: '结算失败',
-        icon: 'error'
-      })
+        wx.showToast({
+          title: '结算成功',
+          icon: 'success'
+        })
+        setTimeout(() => {
+          wx.navigateBack()
+        }, 1500)
+      },
+      fail: (err) => {
+        wx.hideLoading()
+        console.error('结算失败:', err)
+        wx.showToast({
+          title: '结算失败',
+          icon: 'error'
+        })
+      }
     })
   },
 
