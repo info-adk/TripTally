@@ -42,6 +42,14 @@ exports.main = async (event, context) => {
     const room = roomResult.data[0]
     const roomId = room._id
 
+    // 已结算锁定的房间不允许再加入，避免影响已确认的账目
+    if (room.isLocked) {
+      return {
+        success: false,
+        message: '房间已结算锁定，无法加入'
+      }
+    }
+
     // 检查是否已满员
     if (room.memberCount >= room.maxMembers) {
       return {

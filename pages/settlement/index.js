@@ -5,6 +5,9 @@ Page({
   data: {
     roomId: '',
     roomInfo: {},
+    isLocked: false,
+    // 展示已结算账目（含本次锁定与历史已结算房间）
+    isSettledView: false,
     expenses: [],
     members: [],
     totalAmount: 0,
@@ -34,11 +37,13 @@ Page({
   loadData: function() {
     this.setData({ isLoading: true })
 
-    Promise.all([
-      this.loadRoomInfo(),
-      this.loadMembers(),
-      this.loadExpenses()
-    ]).then(() => {
+    // 先读取房间信息，确定是否已锁定，再决定账目的查询范围
+    this.loadRoomInfo().then(() => {
+      return Promise.all([
+        this.loadMembers(),
+        this.loadExpenses()
+      ])
+    }).then(() => {
       this.calculateSettlement()
       this.setData({ isLoading: false })
     }).catch(err => {
@@ -56,7 +61,10 @@ Page({
       const db = wx.cloud.database()
       db.collection('rooms').doc(this.data.roomId).get({
         success: (res) => {
-          this.setData({ roomInfo: res.data })
+          this.setData({
+            roomInfo: res.data,
+            isLocked: !!(res.data && res.data.isLocked)
+          })
           resolve()
         },
         fail: reject
@@ -87,16 +95,14 @@ Page({
     const roomId = this.data.roomId
     const _this = this
 
-    // 分页获取全部未结算支出（微信云数据库单次最多返回20条）
+    // 分页获取房间全部账目（微信云数据库单次最多返回20条）
+    // 这样才能兼容两类房间：本次改动后锁定的房间、以及此前已结算但没有锁定标记的老房间
     const MAX_LIMIT = 20
 
     const getPage = (skip) => {
       return new Promise((resolve, reject) => {
         db.collection('expenses')
-          .where({
-            roomId,
-            isSettled: false
-          })
+          .where({ roomId })
           .orderBy('createdAt', 'desc')
           .skip(skip)
           .limit(MAX_LIMIT)
@@ -111,7 +117,7 @@ Page({
     return getPage(0).then(firstBatch => {
       if (firstBatch.length < MAX_LIMIT) {
         // 不足一页，没有更多数据
-        _this.setData({ expenses: firstBatch })
+        _this.applyExpenses(firstBatch)
         return
       }
 
@@ -128,9 +134,31 @@ Page({
             expenses = expenses.concat(batch)
           }
         })
-        _this.setData({ expenses })
+        _this.applyExpenses(expenses)
       })
     })
+  },
+
+  // 根据房间状态决定展示范围
+  // 已锁定：展示全部账目
+  // 未锁定且有新一轮待结算账目：只展示待结算账目
+  // 未锁定但没有待结算、存在历史结算记录：按历史已结算展示全部账目
+  applyExpenses: function(allExpenses) {
+    const isLocked = this.data.isLocked
+    let expenses = allExpenses
+    let isSettledView = isLocked
+
+    if (!isLocked) {
+      const unsettled = allExpenses.filter(item => !item.isSettled)
+      if (unsettled.length > 0) {
+        expenses = unsettled
+        isSettledView = false
+      } else {
+        isSettledView = allExpenses.length > 0
+      }
+    }
+
+    this.setData({ expenses, isSettledView })
   },
 
   calculateSettlement: function() {
@@ -244,9 +272,21 @@ Page({
   },
 
   onConfirmSettlement: function() {
+    if (this.data.isLocked) {
+      wx.showToast({
+        title: '房间已结算锁定',
+        icon: 'none'
+      })
+      return
+    }
+
+    const content = this.data.isSettledView
+      ? '该房间已有结算记录。锁定后将不能再新增、修改或删除支出，账目会完整保留。'
+      : '确认后房间将被锁定，不能再新增、修改或删除支出。账目会完整保留，可随时查看。'
+
     wx.showModal({
-      title: '确认结算',
-      content: '确定要确认结算吗？结算后将标记所有待结算支出为已结算。',
+      title: this.data.isSettledView ? '锁定房间' : '确认结算',
+      content,
       success: (res) => {
         if (res.confirm) {
           this.doSettlement()
@@ -276,12 +316,13 @@ Page({
           return
         }
         wx.showToast({
-          title: '结算成功',
+          title: this.data.isSettledView ? '锁定成功' : '结算成功',
           icon: 'success'
         })
+        // 重新加载：房间已锁定，页面继续展示结算记录
         setTimeout(() => {
-          wx.navigateBack()
-        }, 1500)
+          this.loadData()
+        }, 800)
       },
       fail: (err) => {
         wx.hideLoading()

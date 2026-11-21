@@ -21,12 +21,18 @@ module.exports = {
         <view class="summary-count">{{expenseCount}}笔支出</view>
       </view>
 
+      <!-- 锁定/已结算提示 -->
+      <view wx:if="{{isSettledView}}" class="locked-banner">
+        <text class="locked-icon">{{isLocked ? '🔒' : '📌'}}</text>
+        <text>{{isLocked ? '房间已结算锁定，账目仅供查看' : '历史账目已结算，以下为结算数据'}}</text>
+      </view>
+
       <!-- 结算方案 -->
       <view class="settlement-section">
         <view class="section-title">结算方案</view>
 
         <view wx:if="{{settlement.length === 0}}" class="empty-state">
-          <text>暂无待结算账单</text>
+          <text>{{isSettledView ? '暂无账目记录' : '暂无待结算账单'}}</text>
         </view>
 
         <view wx:else class="settlement-list">
@@ -87,7 +93,9 @@ module.exports = {
 
       <!-- 操作按钮 -->
       <view class="action-buttons">
-        <button class="btn-confirm" bindtap="onConfirmSettlement" disabled="{{settlement.length === 0}}">
+        <button wx:if="{{isLocked}}" class="btn-confirm" disabled="{{true}}">已结算锁定</button>
+        <button wx:elif="{{isSettledView}}" class="btn-confirm" bindtap="onConfirmSettlement">锁定房间</button>
+        <button wx:else class="btn-confirm" bindtap="onConfirmSettlement" disabled="{{expenseCount === 0}}">
           确认结算
         </button>
       </view>

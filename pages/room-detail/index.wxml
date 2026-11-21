@@ -33,11 +33,20 @@ module.exports = {
             <text class="code">{{roomInfo.roomCode}}</text>
             <text class="copy" bindtap="onCopyRoomCode">复制</text>
           </view>
+          <view wx:if="{{isLocked}}" class="room-locked-tag">🔒 已结算锁定</view>
+        </view>
+
+        <!-- 锁定/已结算提示 -->
+        <view wx:if="{{isLocked}}" class="locked-banner">
+          <text>🔒 房间已确认结算，账目已锁定，不能再新增、修改或删除。</text>
+        </view>
+        <view wx:elif="{{isSettledView}}" class="locked-banner">
+          <text>📌 历史账目已结算，仅供查看；新增支出将开启新一轮记账。</text>
         </view>
 
         <!-- 快捷操作 -->
         <view class="quick-btns">
-          <view class="quick-btn" bindtap="goToAddExpense">
+          <view class="quick-btn {{isLocked ? 'quick-btn-disabled' : ''}}" bindtap="goToAddExpense">
             <text class="icon">➕</text>
             <text>添加支出</text>
           </view>
@@ -83,9 +92,9 @@ module.exports = {
 
         <!-- 支出列表 -->
         <view class="card">
-          <view class="card-title">最近支出</view>
+          <view class="card-title">{{isSettledView ? '支出记录' : '最近支出'}}</view>
           <view wx:if="{{expenses.length === 0}}" class="empty">
-            <text>暂无支出记录</text>
+            <text>{{isSettledView ? '暂无账目记录' : '暂无支出记录'}}</text>
           </view>
           <view wx:else>
             <view wx:for="{{displayExpenses}}" wx:key="_id" class="expense-item" bindtap="onExpenseTap" data-id="{{item._id}}">

@@ -94,6 +94,12 @@ Page({
     const { expense, roomInfo, currentUserName } = this.data
     if (!expense || !roomInfo) return
 
+    // 房间已结算锁定，任何角色都只能查看
+    if (roomInfo.isLocked) {
+      this.setData({ canEdit: false })
+      return
+    }
+
     let canEdit = false
 
     // 支付者可以编辑

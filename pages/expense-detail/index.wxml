@@ -111,7 +111,7 @@ module.exports = {
             class="action-button secondary"
             disabled="{{true}}"
           >
-            仅查看（仅支付者可编辑）
+            {{roomInfo.isLocked ? '房间已结算锁定，仅可查看' : '仅查看（仅支付者可编辑）'}}
           </button>
         </view>
       </view>
