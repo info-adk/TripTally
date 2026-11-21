@@ -84,10 +84,31 @@ page {
   border-radius: 8rpx;
 }
 
+.room-locked-tag {
+  margin-top: 14rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.locked-banner {
+  background: #fff7e6;
+  color: #ad6800;
+  font-size: 24rpx;
+  line-height: 1.5;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 24rpx;
+}
+
 .quick-btns {
   display: flex;
   gap: 20rpx;
   margin-bottom: 24rpx;
+}
+
+.quick-btn-disabled {
+  opacity: 0.5;
 }
 
 .quick-btn {

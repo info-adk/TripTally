@@ -49,6 +49,23 @@ page {
   opacity: 0.8;
 }
 
+.locked-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  background: #fff7e6;
+  color: #ad6800;
+  font-size: 26rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 28rpx;
+}
+
+.locked-icon {
+  font-size: 28rpx;
+}
+
 .settlement-section,
 .balance-section {
   margin-bottom: 32rpx;

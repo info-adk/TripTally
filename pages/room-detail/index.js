@@ -8,6 +8,9 @@ Page({
   data: {
     roomId: '',
     roomInfo: {},
+    isLocked: false,
+    // 展示已结算账目（含本次锁定与历史已结算房间）
+    isSettledView: false,
     members: [],
     expenses: [],
     displayExpenses: [],
@@ -76,11 +79,13 @@ Page({
   // 加载房间数据
   loadRoomData: function() {
     this.setData({ isLoading: true })
-    Promise.all([
-      this.loadRoomInfo(),
-      this.loadMembers(),
-      this.loadExpenses()
-    ]).then(() => {
+    // 先读取房间信息（锁定状态），再决定账目的查询范围
+    this.loadRoomInfo().then(() => {
+      return Promise.all([
+        this.loadMembers(),
+        this.loadExpenses()
+      ])
+    }).then(() => {
       this.calculateAA()
       this.setupDataWatchers()
       this.setData({ isLoading: false })
@@ -101,7 +106,8 @@ Page({
       db.collection('rooms').doc(this.data.roomId).get({
         success: (res) => {
           this.setData({
-            roomInfo: res.data
+            roomInfo: res.data,
+            isLocked: !!(res.data && res.data.isLocked)
           })
           resolve()
         },
@@ -144,17 +150,15 @@ Page({
     const roomId = this.data.roomId
     const _this = this
 
-    // 分页获取全部未结算支出记录（微信云数据库单次默认最多返回20条）
+    // 分页获取房间全部账目（微信云数据库单次默认最多返回20条）
+    // 这样才能兼容两类房间：本次改动后锁定的房间、以及此前已结算但没有锁定标记的老房间
     const MAX_LIMIT = 20
 
     // 获取单页数据
     const getPage = (skip) => {
       return new Promise((resolve, reject) => {
         db.collection('expenses')
-          .where({
-            roomId,
-            isSettled: false
-          })
+          .where({ roomId })
           .orderBy('date', 'desc')
           .orderBy('createdAt', 'desc')
           .skip(skip)
@@ -170,10 +174,7 @@ Page({
     return getPage(0).then(firstBatch => {
       if (firstBatch.length < MAX_LIMIT) {
         // 不足一页，没有更多数据
-        _this.setData({
-          expenses: firstBatch,
-          displayExpenses: firstBatch.slice(0, 3)
-        })
+        _this.applyExpenses(firstBatch)
         return
       }
 
@@ -190,14 +191,37 @@ Page({
             expenses = expenses.concat(batch)
           }
         })
-        _this.setData({
-          expenses,
-          displayExpenses: expenses.slice(0, 3)
-        })
+        _this.applyExpenses(expenses)
       })
     }).catch(err => {
       console.error('加载支出记录失败:', err)
       throw err
+    })
+  },
+
+  // 根据房间状态决定展示范围
+  // 已锁定：展示全部账目
+  // 未锁定且有新一轮待结算账目：只展示待结算账目
+  // 未锁定但没有待结算、存在历史结算记录：按历史已结算展示全部账目
+  applyExpenses: function(allExpenses) {
+    const isLocked = this.data.isLocked
+    let expenses = allExpenses
+    let isSettledView = isLocked
+
+    if (!isLocked) {
+      const unsettled = allExpenses.filter(item => !item.isSettled)
+      if (unsettled.length > 0) {
+        expenses = unsettled
+        isSettledView = false
+      } else {
+        isSettledView = allExpenses.length > 0
+      }
+    }
+
+    this.setData({
+      expenses,
+      displayExpenses: expenses.slice(0, 3),
+      isSettledView
     })
   },
 
@@ -312,38 +336,51 @@ Page({
     const db = wx.cloud.database()
     const _ = db.command
 
-    // 监听支出变化
-    this.data.expenseWatcher = db.collection('expenses')
-      .where({
-        roomId: this.data.roomId,
-        isSettled: false
-      })
-      .orderBy('date', 'desc')
-      .orderBy('createdAt', 'desc')
-      .limit(WATCH_LIMIT)
-      .watch({
-        onChange: (snapshot) => {
-          console.log('支出数据变化:', snapshot)
-          const docs = snapshot.docs || []
-          if (docs.length >= WATCH_LIMIT) {
-            // snapshot 已被 limit 截断，不能当作全量数据使用，回退到分页查询
-            this.loadExpenses().then(() => this.calculateAA()).catch(err => {
-              console.error('重新加载支出记录失败:', err)
+    // 已锁定的房间账目不可再变更，无需监听支出
+    if (this.data.isLocked) {
+      if (this.data.expenseWatcher) {
+        this.data.expenseWatcher.close()
+        this.setData({ expenseWatcher: null })
+      }
+    } else {
+      // 监听支出变化
+      this.data.expenseWatcher = db.collection('expenses')
+        .where({
+          roomId: this.data.roomId,
+          isSettled: false
+        })
+        .orderBy('date', 'desc')
+        .orderBy('createdAt', 'desc')
+        .limit(WATCH_LIMIT)
+        .watch({
+          onChange: (snapshot) => {
+            console.log('支出数据变化:', snapshot)
+            // 房间已锁定：忽略待结算集合清空的变更，避免覆盖已加载的完整账目
+            if (this.data.isLocked) return
+            const docs = snapshot.docs || []
+            if (docs.length >= WATCH_LIMIT) {
+              // snapshot 已被 limit 截断，不能当作全量数据使用，回退到分页查询
+              this.loadExpenses().then(() => this.calculateAA()).catch(err => {
+                console.error('重新加载支出记录失败:', err)
+              })
+              return
+            }
+            // 历史已结算视图下，还没有新一轮账目时保持原展示
+            if (this.data.isSettledView && docs.length === 0) return
+            this.setData({
+              expenses: docs,
+              displayExpenses: docs.slice(0, 3),
+              isSettledView: false
             })
-            return
+            this.calculateAA()
+          },
+          onError: (err) => {
+            console.error('监听支出数据失败:', err)
+            // 降级为轮询
+            this.startPolling()
           }
-          this.setData({
-            expenses: docs,
-            displayExpenses: docs.slice(0, 3)
-          })
-          this.calculateAA()
-        },
-        onError: (err) => {
-          console.error('监听支出数据失败:', err)
-          // 降级为轮询
-          this.startPolling()
-        }
-      })
+        })
+    }
 
     // 监听成员变化
     this.data.memberWatcher = db.collection('room_members')
@@ -393,10 +430,13 @@ Page({
     if (this.data.isRefreshing) return
 
     this.setData({ isRefreshing: true })
-    Promise.all([
-      this.loadMembers(),
-      this.loadExpenses()
-    ]).then(() => {
+    // 先刷新房间信息，确保锁定状态是最新的
+    this.loadRoomInfo().then(() => {
+      return Promise.all([
+        this.loadMembers(),
+        this.loadExpenses()
+      ])
+    }).then(() => {
       this.calculateAA()
       this.setupDataWatchers()
       this.setData({ isRefreshing: false })
@@ -486,6 +526,13 @@ Page({
 
   // 跳转到添加支出
   goToAddExpense: function() {
+    if (this.data.isLocked) {
+      wx.showToast({
+        title: '房间已结算锁定，无法添加支出',
+        icon: 'none'
+      })
+      return
+    }
     wx.navigateTo({
       url: `/pages/add-expense/index?roomId=${this.data.roomId}`
     })

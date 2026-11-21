@@ -25,6 +25,8 @@ Page({
     ],
     currentUserName: '',
     maxDate: '',
+    // 用户是否手动改过支付者（避免异步加载覆盖用户选择）
+    hasPayerTouched: false,
     // 状态
     isLoading: false,
     isFormValid: false,
@@ -68,13 +70,45 @@ Page({
       maxDate: maxDate
     })
 
-    // 加载房间成员
-    this.loadRoomMembers()
+    // 先确认房间未锁定，再加载表单数据
+    this.checkRoomLocked().then(allowed => {
+      if (!allowed) return
 
-    // 如果是编辑模式，加载支出详情
-    if (this.data.isEdit) {
-      this.loadExpenseDetail()
-    }
+      // 加载房间成员
+      this.loadRoomMembers()
+
+      // 如果是编辑模式，加载支出详情
+      if (this.data.isEdit) {
+        this.loadExpenseDetail()
+      }
+    })
+  },
+
+  // 检查房间是否已结算锁定
+  checkRoomLocked: function() {
+    return new Promise((resolve) => {
+      wx.cloud.database().collection('rooms').doc(this.data.roomId).get({
+        success: (res) => {
+          if (res.data && res.data.isLocked) {
+            wx.showModal({
+              title: '房间已锁定',
+              content: '该房间已确认结算，不能再新增或修改支出。',
+              showCancel: false,
+              success: () => {
+                wx.navigateBack()
+              }
+            })
+            resolve(false)
+          } else {
+            resolve(true)
+          }
+        },
+        fail: () => {
+          // 读取失败时放行，由云函数做最终校验
+          resolve(true)
+        }
+      })
+    })
   },
 
   // 加载支出详情（编辑模式）
@@ -139,18 +173,13 @@ Page({
 
           // 如果是编辑模式，需要设置正确的支付者和参与人
           if (this.data.isEdit) {
-            const expense = this.data
-            // 找到支付者索引
-            payerIndex = members.findIndex(m => m.userName === expense.payerName)
-            if (payerIndex === -1) payerIndex = 0
-
-            // 设置参与人
+            // 设置参与人（默认不选，随后按原记录恢复）
             const newParticipants = {}
             members.forEach(member => {
               newParticipants[member.userName] = false
             })
-            // 从数据库加载参与人
-            this.loadParticipantsAndSet(members, newParticipants, payerIndex)
+            // 支付者和参与人都以数据库中的原记录为准
+            this.loadParticipantsAndSet(members, newParticipants)
           } else {
             this.setData({
               members,
@@ -185,23 +214,37 @@ Page({
     })
   },
 
-  // 加载参与人数据并设置
-  loadParticipantsAndSet: function(members, participants, payerIndex) {
+  // 加载原始支出的支付者和参与人并设置
+  loadParticipantsAndSet: function(members, participants) {
     const db = wx.cloud.database()
     db.collection('expenses').doc(this.data.expenseId).get({
       success: (res) => {
-        const expense = res.data
-        if (expense && expense.participants) {
+        const expense = res.data || {}
+
+        // 恢复参与人
+        const participantMap = {}
+        members.forEach(member => {
+          participantMap[member.userName] = false
+        })
+        if (expense.participants) {
           expense.participants.forEach(p => {
-            if (participants.hasOwnProperty(p.userName)) {
-              participants[p.userName] = true
+            if (participantMap.hasOwnProperty(p.userName)) {
+              participantMap[p.userName] = true
             }
           })
         }
+
+        // 支付者以原记录为准；若用户已手动选择，则不覆盖
+        let payerIndex = members.findIndex(m => m.userName === expense.payerName)
+        if (payerIndex === -1) payerIndex = 0
+        if (this.data.hasPayerTouched) {
+          payerIndex = this.data.payerIndex
+        }
+
         this.setData({
           members,
           payerIndex,
-          participants,
+          participants: participantMap,
           isFormValid: this.validateForm()
         })
       },
@@ -209,7 +252,6 @@ Page({
         // 失败时也设置默认值
         this.setData({
           members,
-          payerIndex,
           participants
         })
       }
@@ -259,7 +301,9 @@ Page({
   onPayerChange: function(e) {
     const index = e.detail.value
     this.setData({
-      payerIndex: parseInt(index)
+      payerIndex: parseInt(index),
+      // 标记用户已手动选择，避免后续异步加载覆盖
+      hasPayerTouched: true
     })
   },
 

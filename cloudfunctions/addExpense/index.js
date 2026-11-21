@@ -43,6 +43,10 @@ exports.main = async (event, context) => {
       return { success: false, message: '房间不存在' }
     }
 
+    if (roomCheck.data.isLocked) {
+      return { success: false, message: '房间已结算锁定，无法添加支出' }
+    }
+
     const memberCheck = await db.collection('room_members')
       .where({ roomId, userName, isActive: true })
       .count()

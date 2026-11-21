@@ -61,6 +61,11 @@ exports.main = async (event, context) => {
     }
 
     const room = roomResult.data
+
+    if (room.isLocked) {
+      return { success: false, message: '房间已结算锁定，无法修改支出' }
+    }
+
     const isPayer = oldExpense.payerName === userName
     const isCreator = room.creatorName === userName
 
@@ -112,35 +117,36 @@ exports.main = async (event, context) => {
           lastUpdated: db.serverDate()
         }
       })
+    }
 
-      // 更新旧支付者和新支付者的总支付金额
-      if (oldExpense.payerName !== payerName) {
-        // 旧支付者减去旧金额
-        await db.collection('room_members')
-          .where({ roomId, userName: oldExpense.payerName })
-          .update({
-            data: {
-              totalPaid: _.inc(-oldExpense.amount)
-            }
-          })
-        // 新支付者加上新金额
-        await db.collection('room_members')
-          .where({ roomId, userName: payerName })
-          .update({
-            data: {
-              totalPaid: _.inc(amount)
-            }
-          })
-      } else {
-        // 同一支付者，调整金额
-        await db.collection('room_members')
-          .where({ roomId, userName: payerName })
-          .update({
-            data: {
-              totalPaid: _.inc(amountDiff)
-            }
-          })
-      }
+    // 更新成员累计支付：换支付者时转移金额，否则按差额调整
+    // 注意支付者变化时即使金额没变也要调整，否则累计支付会记在旧支付者名下
+    if (oldExpense.payerName !== payerName) {
+      // 旧支付者减去旧金额
+      await db.collection('room_members')
+        .where({ roomId, userName: oldExpense.payerName })
+        .update({
+          data: {
+            totalPaid: _.inc(-oldExpense.amount)
+          }
+        })
+      // 新支付者加上新金额
+      await db.collection('room_members')
+        .where({ roomId, userName: payerName })
+        .update({
+          data: {
+            totalPaid: _.inc(amount)
+          }
+        })
+    } else if (amountDiff !== 0) {
+      // 同一支付者，调整金额
+      await db.collection('room_members')
+        .where({ roomId, userName: payerName })
+        .update({
+          data: {
+            totalPaid: _.inc(amountDiff)
+          }
+        })
     }
 
     return {

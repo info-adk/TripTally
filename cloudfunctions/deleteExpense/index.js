@@ -43,6 +43,11 @@ exports.main = async (event, context) => {
     }
 
     const room = roomResult.data
+
+    if (room.isLocked) {
+      return { success: false, message: '房间已结算锁定，无法删除支出' }
+    }
+
     const isPayer = expense.payerName === userName
     const isCreator = room.creatorName === userName
 

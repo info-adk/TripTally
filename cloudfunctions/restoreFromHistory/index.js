@@ -59,6 +59,14 @@ exports.main = async (event, context) => {
       .get()
     const room = roomResult.data
 
+    if (!room) {
+      return { success: false, message: '房间不存在' }
+    }
+
+    if (room.isLocked) {
+      return { success: false, message: '房间已结算锁定，无法恢复数据' }
+    }
+
     const isCreator = room.creatorName === userName
     const isPayer = expenseData.payerName === userName
 
